@@ -28,8 +28,49 @@ jobs:
       - name: Build APK
         run: gradle :app:assembleDebug
 
+      - name: Find Android Build Tools
+        id: buildtools
+        shell: bash
+        run: |
+          BUILD_TOOLS="$(ls -1 "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
+          echo "dir=$ANDROID_HOME/build-tools/$BUILD_TOOLS" >> "$GITHUB_OUTPUT"
+          echo "Using Android Build Tools: $BUILD_TOOLS"
+
+      - name: Verify APK Signature
+        shell: bash
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          echo "=== APK FILE ==="
+          ls -lh "$APK"
+          file "$APK"
+
+          echo "=== APK SIGNATURE ==="
+          "${{ steps.buildtools.outputs.dir }}/apksigner" verify \
+            --verbose \
+            --print-certs \
+            "$APK"
+
+      - name: Inspect APK Package
+        shell: bash
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+
+          echo "=== APK PACKAGE INFORMATION ==="
+          "${{ steps.buildtools.outputs.dir }}/aapt" dump badging "$APK"
+
       - name: Rename APK
         run: cp app/build/outputs/apk/debug/app-debug.apk EnglishKids5-v1.0.apk
+
+      - name: Compare APK
+        shell: bash
+        run: |
+          echo "=== ORIGINAL APK ==="
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          sha256sum app/build/outputs/apk/debug/app-debug.apk
+
+          echo "=== RENAMED APK ==="
+          ls -lh EnglishKids5-v1.0.apk
+          sha256sum EnglishKids5-v1.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
