@@ -1,0 +1,16 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.englishkids.five'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.englishkids.five"
+        minSdk 23
+        targetSdk 35
+        versionCode 2
+        versionName "1.1.0"
+    }
+}
