@@ -27,8 +27,8 @@ jobs:
         run: |
           keytool -genkeypair \
             -keystore "$RUNNER_TEMP/englishkids-release.jks" \
-            -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
-            -keypass "${{ secrets.KEY_PASSWORD }}" \
+            -storepass "${{ secrets.Acehbesar123 }}" \
+            -keypass "${{ secrets.Acehbesar123 }}" \
             -alias englishkids \
             -keyalg RSA \
             -keysize 4096 \
