@@ -6,6 +6,7 @@ import android.speech.tts.TextToSpeech;
 import android.content.*;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.view.*;
 import android.widget.*;
 
@@ -16,8 +17,19 @@ public class MainActivity extends Activity
         implements TextToSpeech.OnInitListener {
 
     private TextToSpeech tts;
-    private LinearLayout root, content;
+    private LinearLayout root, content, bottomNav;
+    private ScrollView scroll;
     private SharedPreferences prefs;
+
+    private final int BG = Color.rgb(250, 248, 255);
+    private final int TEXT = Color.rgb(42, 48, 67);
+    private final int MUTED = Color.rgb(105, 110, 130);
+
+    private final int PURPLE = Color.rgb(124, 101, 232);
+    private final int BLUE = Color.rgb(91, 180, 245);
+    private final int PINK = Color.rgb(246, 126, 166);
+    private final int GREEN = Color.rgb(93, 198, 151);
+    private final int YELLOW = Color.rgb(255, 193, 77);
 
     static class Word {
         String en, id, icon, category;
@@ -76,30 +88,41 @@ public class MainActivity extends Activity
     };
 
     @Override
-    public void onCreate(Bundle b) {
-        super.onCreate(b);
+    public void onCreate(Bundle state) {
+        super.onCreate(state);
 
         prefs = getSharedPreferences("progress", MODE_PRIVATE);
         tts = new TextToSpeech(this, this);
 
         buildShell();
-
-        // VERSI BARU: aplikasi pertama kali membuka dashboard utama
-        showMainMenu();
+        showDashboard();
     }
 
-    // =========================================================
-    // UI HELPERS
-    // =========================================================
+    // =====================================================
+    // BASIC UI
+    // =====================================================
 
-    private TextView tv(String text, int size, boolean bold) {
+    private int dp(int value) {
+        return (int)(value * getResources().getDisplayMetrics().density + 0.5f);
+    }
+
+    private GradientDrawable shape(int color, float radius) {
+
+        GradientDrawable g = new GradientDrawable();
+        g.setColor(color);
+        g.setCornerRadius(dp((int)radius));
+
+        return g;
+    }
+
+    private TextView text(String value, int size, boolean bold) {
 
         TextView v = new TextView(this);
 
-        v.setText(text);
+        v.setText(value);
         v.setTextSize(size);
-        v.setTextColor(Color.rgb(40,55,70));
-        v.setPadding(18,12,18,12);
+        v.setTextColor(TEXT);
+        v.setLineSpacing(0,1.08f);
 
         if (bold)
             v.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
@@ -107,214 +130,202 @@ public class MainActivity extends Activity
         return v;
     }
 
-    private Button btn(String text) {
+    private TextView centerText(String value, int size, boolean bold) {
+
+        TextView v = text(value,size,bold);
+        v.setGravity(Gravity.CENTER);
+
+        return v;
+    }
+
+    private Space space(int height) {
+
+        Space s = new Space(this);
+        s.setLayoutParams(new LinearLayout.LayoutParams(1,dp(height)));
+
+        return s;
+    }
+
+    private Button modernButton(String label, int color) {
 
         Button b = new Button(this);
 
-        b.setText(text);
+        b.setText(label);
         b.setTextSize(16);
+        b.setTextColor(Color.WHITE);
+        b.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
         b.setAllCaps(false);
-        b.setPadding(10,12,10,12);
+        b.setGravity(Gravity.CENTER);
+
+        b.setPadding(dp(14),dp(11),dp(14),dp(11));
+        b.setBackground(shape(color,18));
+
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        dp(54)
+                );
+
+        lp.setMargins(0,dp(5),0,dp(5));
+        b.setLayoutParams(lp);
 
         return b;
     }
+
+    private LinearLayout card(int color) {
+
+        LinearLayout c = new LinearLayout(this);
+
+        c.setOrientation(LinearLayout.VERTICAL);
+        c.setPadding(dp(18),dp(18),dp(18),dp(18));
+        c.setBackground(shape(color,24));
+
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+        lp.setMargins(0,0,0,dp(16));
+        c.setLayoutParams(lp);
+
+        c.setElevation(dp(2));
+
+        return c;
+    }
+
+    private void clear() {
+        content.removeAllViews();
+        scroll.scrollTo(0,0);
+    }
+
+    // =====================================================
+    // APP SHELL + SAFE BOTTOM NAV
+    // =====================================================
 
     private void buildShell() {
 
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setBackgroundColor(Color.rgb(255,248,225));
+        root.setBackgroundColor(BG);
 
-        TextView header = tv(
-                "🌈 English Kids 5 ⭐",
-                25,
-                true
-        );
+        // HEADER
 
-        header.setGravity(Gravity.CENTER);
-        header.setBackgroundColor(Color.rgb(129,212,250));
+        LinearLayout header = new LinearLayout(this);
 
-        header.setOnClickListener(v -> showMainMenu());
+        header.setGravity(Gravity.CENTER_VERTICAL);
+        header.setPadding(dp(20),dp(14),dp(20),dp(14));
+        header.setBackground(shape(Color.rgb(236,232,255),0));
+
+        TextView logo = text("🌈",31,false);
+
+        TextView title = text(" English Kids 5",24,true);
+
+        header.addView(logo);
+        header.addView(title);
 
         root.addView(header);
 
-        ScrollView scroll = new ScrollView(this);
+        // CONTENT
+
+        scroll = new ScrollView(this);
+        scroll.setFillViewport(true);
+        scroll.setClipToPadding(false);
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(18,18,18,30);
+
+        content.setPadding(
+                dp(18),
+                dp(20),
+                dp(18),
+                dp(26)
+        );
 
         scroll.addView(content);
 
         root.addView(
                 scroll,
-                new LinearLayout.LayoutParams(-1,0,1)
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        0,
+                        1
+                )
         );
 
-        LinearLayout nav = new LinearLayout(this);
-        nav.setPadding(4,4,4,4);
-
-        String[] menus = {
-                "🏠 Home",
-                "📚 Belajar",
-                "🎮 Bermain",
-                "❤️ Sulit",
-                "👨‍👩‍👧 Ortu"
-        };
-
-        for (String name : menus) {
-
-            Button b = btn(name);
-            b.setTextSize(12);
-
-            nav.addView(
-                    b,
-                    new LinearLayout.LayoutParams(0,-2,1)
-            );
-
-            if (name.contains("Home"))
-                b.setOnClickListener(v -> showMainMenu());
-
-            else if (name.contains("Belajar"))
-                b.setOnClickListener(v -> showLearnMenu());
-
-            else if (name.contains("Bermain"))
-                b.setOnClickListener(v -> showGames());
-
-            else if (name.contains("Sulit"))
-                b.setOnClickListener(v -> showDifficult());
-
-            else
-                b.setOnClickListener(v -> showParent());
-        }
-
-        root.addView(nav);
+        buildBottomNav();
 
         setContentView(root);
+
+        /*
+         * IMPORTANT:
+         * Read Android navigation-bar inset and push footer upward.
+         * This fixes the footer being hidden behind Samsung/Android
+         * navigation buttons or gesture bar.
+         */
+        root.setOnApplyWindowInsetsListener((v,insets) -> {
+
+            int bottom = insets.getSystemWindowInsetBottom();
+
+            bottomNav.setPadding(
+                    dp(5),
+                    dp(7),
+                    dp(5),
+                    Math.max(dp(8),bottom + dp(5))
+            );
+
+            return insets;
+        });
+
+        root.requestApplyInsets();
     }
 
-    private void clear() {
-        content.removeAllViews();
+    private void buildBottomNav() {
+
+        bottomNav = new LinearLayout(this);
+
+        bottomNav.setOrientation(LinearLayout.HORIZONTAL);
+        bottomNav.setGravity(Gravity.CENTER);
+
+        bottomNav.setBackgroundColor(Color.WHITE);
+
+        addNav("🏠\nHome", () -> showDashboard());
+        addNav("📚\nBelajar", () -> showLearn());
+        addNav("🎮\nBermain", () -> showGames());
+        addNav("❤️\nSulit", () -> showDifficult());
+        addNav("👨‍👩‍👧\nOrtu", () -> showParent());
+
+        root.addView(
+                bottomNav,
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+        );
     }
 
-    // =========================================================
-    // NEW MAIN DASHBOARD
-    // =========================================================
+    private void addNav(String label, Runnable action) {
 
-    private void showMainMenu() {
+        TextView item = centerText(label,12,true);
 
-        clear();
+        item.setTextColor(MUTED);
+        item.setPadding(dp(3),dp(7),dp(3),dp(7));
 
-        TextView welcome = tv(
-                "👋 Ayo Belajar Bahasa Inggris!",
-                28,
-                true
+        item.setOnClickListener(v -> action.run());
+
+        bottomNav.addView(
+                item,
+                new LinearLayout.LayoutParams(
+                        0,
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        1
+                )
         );
-
-        welcome.setGravity(Gravity.CENTER);
-        content.addView(welcome);
-
-        TextView intro = tv(
-                "Belajar sedikit setiap hari, lalu bermain untuk mengingat kata-katanya.",
-                17,
-                false
-        );
-
-        intro.setGravity(Gravity.CENTER);
-        content.addView(intro);
-
-        content.addView(tv(
-                "🔥 Hari Belajar: " + (dayNumber()+1) +
-                "\n⭐ Kata Dikuasai: " + prefs.getInt("learned",0) +
-                "\n🏆 Bintang: " + prefs.getInt("stars",0),
-                19,
-                true
-        ));
-
-        // MENU 1 - FOKUS BELAJAR
-        LinearLayout learnCard = new LinearLayout(this);
-        learnCard.setOrientation(LinearLayout.VERTICAL);
-        learnCard.setPadding(20,20,20,20);
-        learnCard.setBackgroundColor(Color.WHITE);
-
-        TextView learnTitle = tv(
-                "📚 BELAJAR KATA",
-                25,
-                true
-        );
-        learnTitle.setGravity(Gravity.CENTER);
-
-        learnCard.addView(learnTitle);
-
-        TextView learnDesc = tv(
-                "Fokus mempelajari 5 kata bahasa Inggris setiap hari.\n\n" +
-                "🔊 Dengarkan pengucapan\n" +
-                "🧠 Hafalkan arti\n" +
-                "⭐ Tandai kata yang sudah dikuasai\n" +
-                "🔁 Ulangi pelajaran kemarin",
-                16,
-                false
-        );
-
-        learnCard.addView(learnDesc);
-
-        Button learn = btn("📚 MULAI BELAJAR");
-
-        learn.setOnClickListener(v -> showLearnMenu());
-
-        learnCard.addView(learn);
-
-        LinearLayout.LayoutParams cardLp =
-                new LinearLayout.LayoutParams(-1,-2);
-
-        cardLp.setMargins(0,15,0,22);
-
-        content.addView(learnCard,cardLp);
-
-        // MENU 2 - GAME
-        LinearLayout gameCard = new LinearLayout(this);
-        gameCard.setOrientation(LinearLayout.VERTICAL);
-        gameCard.setPadding(20,20,20,20);
-        gameCard.setBackgroundColor(Color.WHITE);
-
-        TextView gameTitle = tv(
-                "🎮 PERMAINAN KATA",
-                25,
-                true
-        );
-
-        gameTitle.setGravity(Gravity.CENTER);
-        gameCard.addView(gameTitle);
-
-        gameCard.addView(tv(
-                "Latih kata yang sudah dipelajari melalui permainan.\n\n" +
-                "🖼️ Tebak Gambar\n" +
-                "🔊 Dengar & Pilih\n" +
-                "🧩 Cocokkan Kata\n" +
-                "⚡ Tantangan Cepat",
-                16,
-                false
-        ));
-
-        Button play = btn("🎮 MULAI BERMAIN");
-
-        play.setOnClickListener(v -> showGames());
-
-        gameCard.addView(play);
-
-        content.addView(gameCard,cardLp);
-
-        content.addView(tv(
-                "💡 Tahap berikutnya\n" +
-                "Setelah kosakata berkembang, aplikasi dapat ditingkatkan ke latihan kalimat dan grammar.",
-                16,
-                false
-        ));
     }
 
-    // =========================================================
-    // DAILY PROGRESS
-    // =========================================================
+    // =====================================================
+    // DAY / WORD ENGINE
+    // =====================================================
 
     private int dayNumber() {
 
@@ -330,7 +341,7 @@ public class MainActivity extends Activity
             first = now;
         }
 
-        return (int)Math.max(0, now-first);
+        return (int)Math.max(0,now-first);
     }
 
     private List<Integer> todayWords() {
@@ -358,161 +369,206 @@ public class MainActivity extends Activity
         return result;
     }
 
-    // =========================================================
-    // NEW LEARNING MENU
-    // =========================================================
+    // =====================================================
+    // DASHBOARD
+    // =====================================================
 
-    private void showLearnMenu() {
+    private void showDashboard() {
 
         clear();
 
-        content.addView(tv(
-                "📚 Pusat Belajar Kata",
-                28,
-                true
-        ));
+        TextView hello = text("Halo, Little Star! 👋",29,true);
+        content.addView(hello);
 
-        content.addView(tv(
-                "Pilih cara belajar hari ini.",
-                17,
-                false
-        ));
+        TextView sub =
+                text("Siap belajar bahasa Inggris hari ini?",17,false);
 
-        Button today = btn(
-                "🌟 Pelajari 5 Kata Hari Ini"
+        sub.setTextColor(MUTED);
+
+        content.addView(sub);
+        content.addView(space(20));
+
+        LinearLayout progress = card(Color.rgb(236,232,255));
+
+        progress.addView(text("🌟 Progress Hari Ini",20,true));
+        progress.addView(space(8));
+
+        progress.addView(
+                text(
+                        "📚 5 kata baru     ⭐ " +
+                        prefs.getInt("stars",0) +
+                        " bintang\n🔥 Hari belajar " +
+                        (dayNumber()+1) +
+                        "     🏆 " +
+                        prefs.getInt("learned",0) +
+                        " dikuasai",
+                        17,false
+                )
         );
 
-        today.setOnClickListener(v -> showTodayWords());
+        content.addView(progress);
 
-        content.addView(today);
+        LinearLayout learnCard = card(Color.rgb(224,242,255));
 
-        Button yesterday = btn(
-                "🔁 Uji Ulang Kata Kemarin"
-        );
-
-        yesterday.setOnClickListener(v -> showReview());
-
-        content.addView(yesterday);
-
-        Button difficult = btn(
-                "❤️ Latih Kata yang Sulit"
-        );
-
-        difficult.setOnClickListener(v -> showDifficult());
-
-        content.addView(difficult);
-
-        content.addView(tv(
-                "\n⭐ Dikuasai: " +
-                prefs.getInt("learned",0) +
-                " kata\n🔥 Hari belajar: " +
-                (dayNumber()+1),
-                18,
-                true
+        learnCard.addView(centerText("📚",50,false));
+        learnCard.addView(centerText("Belajar Kata",24,true));
+        learnCard.addView(centerText(
+                "Pelajari 5 kata baru hari ini\nlengkap dengan suara dan gambar.",
+                16,false
         ));
+
+        learnCard.setOnClickListener(v -> showLearn());
+
+        content.addView(learnCard);
+
+        LinearLayout gameCard = card(Color.rgb(255,232,241));
+
+        gameCard.addView(centerText("🎮",50,false));
+        gameCard.addView(centerText("Bermain Kata",24,true));
+        gameCard.addView(centerText(
+                "Latih kata yang sudah dipelajari\ndengan permainan seru.",
+                16,false
+        ));
+
+        gameCard.setOnClickListener(v -> showGames());
+
+        content.addView(gameCard);
+
+        LinearLayout hardCard = card(Color.rgb(255,244,215));
+
+        hardCard.addView(text("❤️ Latihan Khusus",20,true));
+
+        int hard = 0;
+
+        for (int i=0;i<words.length;i++)
+            if (prefs.getBoolean("hard_"+i,false))
+                hard++;
+
+        hardCard.addView(
+                text(
+                        hard == 0
+                                ? "Hebat! Belum ada kata yang dianggap sulit."
+                                : hard+" kata perlu dilatih kembali.",
+                        16,false
+                )
+        );
+
+        hardCard.setOnClickListener(v -> showDifficult());
+
+        content.addView(hardCard);
     }
 
-    private void showTodayWords() {
+    // =====================================================
+    // LEARN
+    // =====================================================
+
+    private void showLearn() {
 
         clear();
 
-        content.addView(tv(
-                "🌟 5 Kata Hari Ini",
-                28,
-                true
-        ));
+        content.addView(text("📚 Belajar Kata",29,true));
 
-        content.addView(tv(
-                "Dengarkan, ucapkan, dan hafalkan satu per satu.",
-                17,
-                false
-        ));
+        TextView subtitle =
+                text("5 kata hari ini • dengarkan, ucapkan, lalu hafalkan.",16,false);
+
+        subtitle.setTextColor(MUTED);
+
+        content.addView(subtitle);
+        content.addView(space(15));
+
+        LinearLayout stats = card(Color.rgb(236,232,255));
+
+        stats.addView(
+                text(
+                        "⭐ Dikuasai "+prefs.getInt("learned",0)+
+                        "     🔥 Hari "+(dayNumber()+1),
+                        18,true
+                )
+        );
+
+        content.addView(stats);
+
+        Button review =
+                modernButton(
+                        "🔁 Uji Ulang Kata Kemarin",
+                        PURPLE
+                );
+
+        review.setOnClickListener(v -> showReview());
+
+        content.addView(review);
+        content.addView(space(15));
+
+        content.addView(text("🌟 5 Kata Hari Ini",23,true));
+        content.addView(space(10));
 
         for (int idx : todayWords())
             addWordCard(idx);
-
-        Button review = btn(
-                "🔁 Setelah Belajar, Uji Ingatanku"
-        );
-
-        review.setOnClickListener(v -> {
-
-            List<Integer> pool =
-                    new ArrayList<>(todayWords());
-
-            Collections.shuffle(pool);
-
-            showQuiz(pool,0,0);
-        });
-
-        content.addView(review);
     }
 
     private void addWordCard(int idx) {
 
         Word w = words[idx];
 
-        LinearLayout card = new LinearLayout(this);
+        LinearLayout c = card(Color.WHITE);
 
-        card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(16,14,16,14);
-        card.setBackgroundColor(Color.WHITE);
+        TextView icon = centerText(w.icon,64,false);
 
-        TextView icon = tv(w.icon,54,false);
-        icon.setGravity(Gravity.CENTER);
-        card.addView(icon);
+        icon.setPadding(0,dp(10),0,dp(6));
 
-        TextView title = tv(
-                w.en.toUpperCase() +
-                " — " +
-                w.id,
-                22,
-                true
+        c.addView(icon);
+
+        c.addView(
+                centerText(
+                        w.en.toUpperCase()+"  •  "+w.id,
+                        23,true
+                )
         );
 
-        title.setGravity(Gravity.CENTER);
-        card.addView(title);
+        TextView category =
+                centerText("📁 "+w.category,14,false);
 
-        TextView category = tv(
-                "📁 " + w.category,
-                14,
-                false
-        );
+        category.setTextColor(MUTED);
 
-        category.setGravity(Gravity.CENTER);
-        card.addView(category);
+        c.addView(category);
+        c.addView(space(12));
 
-        Button speak = btn("🔊 Dengarkan");
+        Button speak =
+                modernButton("🔊 Dengarkan",BLUE);
 
         speak.setOnClickListener(v -> speak(w.en));
 
-        card.addView(speak);
+        c.addView(speak);
 
-        Button hardMemory = btn("🧠 Sulit Dihafal");
+        LinearLayout actions = new LinearLayout(this);
+        actions.setOrientation(LinearLayout.HORIZONTAL);
+
+        Button hardMemory = modernButton("🧠 Sulit",PINK);
+
+        Button known = modernButton("⭐ Hafal",GREEN);
+
+        actions.addView(
+                hardMemory,
+                new LinearLayout.LayoutParams(0,dp(54),1)
+        );
+
+        Space gap = new Space(this);
+
+        actions.addView(
+                gap,
+                new LinearLayout.LayoutParams(dp(8),1)
+        );
+
+        actions.addView(
+                known,
+                new LinearLayout.LayoutParams(0,dp(54),1)
+        );
 
         hardMemory.setOnClickListener(v -> {
 
             markHard(idx,"memory");
-            toast("Masuk latihan Sulit Dihafal ❤️");
+            toast("Masuk latihan khusus ❤️");
         });
-
-        card.addView(hardMemory);
-
-        Button hardSpeak = btn("🗣️ Sulit Diucapkan");
-
-        hardSpeak.setOnClickListener(v -> {
-
-            markHard(idx,"pronounce");
-            toast("Masuk latihan Pengucapan ❤️");
-        });
-
-        card.addView(hardSpeak);
-
-        Button known = btn(
-                prefs.getBoolean("known_"+idx,false)
-                        ? "✅ Sudah Dikuasai"
-                        : "⭐ Sudah Hafal"
-        );
 
         known.setOnClickListener(v -> {
 
@@ -525,24 +581,28 @@ public class MainActivity extends Activity
                                 prefs.getInt("learned",0)+1
                         )
                         .apply();
-
-                known.setText("✅ Sudah Dikuasai");
-                toast("Hebat! Kata dikuasai ⭐");
-
-            } else {
-
-                toast("Kata ini sudah dikuasai ⭐");
             }
+
+            toast("Hebat! Kata sudah dikuasai ⭐");
         });
 
-        card.addView(known);
+        c.addView(actions);
 
-        LinearLayout.LayoutParams lp =
-                new LinearLayout.LayoutParams(-1,-2);
+        Button pronounce =
+                modernButton(
+                        "🗣️ Saya Sulit Mengucapkannya",
+                        PURPLE
+                );
 
-        lp.setMargins(0,0,0,18);
+        pronounce.setOnClickListener(v -> {
 
-        content.addView(card,lp);
+            markHard(idx,"pronounce");
+            toast("Masuk latihan pengucapan");
+        });
+
+        c.addView(pronounce);
+
+        content.addView(c);
     }
 
     private void markHard(int idx,String type) {
@@ -553,9 +613,9 @@ public class MainActivity extends Activity
                 .apply();
     }
 
-    // =========================================================
+    // =====================================================
     // REVIEW
-    // =========================================================
+    // =====================================================
 
     private void showReview() {
 
@@ -576,17 +636,21 @@ public class MainActivity extends Activity
 
             clear();
 
-            content.addView(tv(
-                    "🌟 Belum Ada Review\n\n" +
-                    "Hari pertama belum mempunyai kata kemarin.\n" +
-                    "Mulai dari 5 kata hari ini.",
-                    20,
-                    true
+            LinearLayout c = card(Color.rgb(236,232,255));
+
+            c.addView(centerText("🌟",60,false));
+            c.addView(centerText("Belum Ada Review",25,true));
+            c.addView(centerText(
+                    "Hari pertama belum mempunyai kata kemarin.\nMulai dari 5 kata hari ini!",
+                    16,false
             ));
 
-            Button learn = btn("📚 Belajar Sekarang");
+            content.addView(c);
 
-            learn.setOnClickListener(v -> showTodayWords());
+            Button learn =
+                    modernButton("📚 Mulai Belajar",PURPLE);
+
+            learn.setOnClickListener(v -> showLearn());
 
             content.addView(learn);
 
@@ -594,49 +658,50 @@ public class MainActivity extends Activity
         }
 
         Collections.shuffle(pool);
-
         showQuiz(pool,0,0);
     }
 
-    private void showQuiz(
-            List<Integer> pool,
-            int pos,
-            int score) {
+    private void showQuiz(List<Integer> pool,int pos,int score) {
 
         clear();
 
         int idx = pool.get(pos);
         Word w = words[idx];
 
-        content.addView(tv(
-                "🔁 Latihan " +
-                (pos+1) + "/" + pool.size() +
-                "   ⭐ " + score,
-                22,
-                true
-        ));
-
-        TextView question = tv(
-                w.icon +
-                "\n\nApa arti \"" +
-                w.en +
-                "\"?",
-                30,
-                true
+        content.addView(
+                text(
+                        "🔁 Review "+(pos+1)+"/"+pool.size(),
+                        22,true
+                )
         );
 
-        question.setGravity(Gravity.CENTER);
+        content.addView(
+                text("⭐ Skor "+score,16,false)
+        );
 
-        content.addView(question);
+        content.addView(space(15));
 
-        Button listen = btn("🔊 Dengarkan");
+        LinearLayout qCard = card(Color.WHITE);
+
+        qCard.addView(centerText(w.icon,70,false));
+
+        qCard.addView(
+                centerText(
+                        "Apa arti \""+w.en+"\"?",
+                        24,true
+                )
+        );
+
+        Button listen =
+                modernButton("🔊 Dengarkan",BLUE);
 
         listen.setOnClickListener(v -> speak(w.en));
 
-        content.addView(listen);
+        qCard.addView(listen);
+
+        content.addView(qCard);
 
         List<String> options = new ArrayList<>();
-
         options.add(w.id);
 
         Random random = new Random();
@@ -654,14 +719,14 @@ public class MainActivity extends Activity
 
         for (String option : options) {
 
-            Button b = btn(option);
+            Button b = modernButton(option,PURPLE);
 
             b.setOnClickListener(v -> {
 
                 boolean correct = option.equals(w.id);
 
                 int newScore =
-                        score + (correct ? 1 : 0);
+                        score+(correct ? 1 : 0);
 
                 if (correct) {
 
@@ -674,8 +739,7 @@ public class MainActivity extends Activity
                 } else {
 
                     markHard(idx,"memory");
-
-                    toast("Belum tepat. Kita latih lagi ❤️");
+                    toast("Belum tepat ❤️");
                 }
 
                 if (pos+1 < pool.size())
@@ -698,112 +762,133 @@ public class MainActivity extends Activity
         }
     }
 
-    private void showReviewResult(
-            int score,
-            int total) {
+    private void showReviewResult(int score,int total) {
 
         clear();
 
-        content.addView(tv(
-                "🏆 Latihan Selesai!",
-                28,
-                true
-        ));
+        LinearLayout c = card(Color.rgb(230,248,239));
 
-        content.addView(tv(
-                "Nilai kamu:\n" +
-                score +
-                " / " +
-                total,
-                25,
-                true
-        ));
+        c.addView(centerText("🏆",70,false));
+        c.addView(centerText("Review Selesai!",28,true));
 
-        Button learn = btn("📚 Kembali Belajar");
+        c.addView(
+                centerText(
+                        "Nilai kamu\n"+score+" / "+total,
+                        23,true
+                )
+        );
 
-        learn.setOnClickListener(v -> showLearnMenu());
+        content.addView(c);
+
+        Button learn =
+                modernButton("📚 Lanjut Belajar",GREEN);
+
+        learn.setOnClickListener(v -> showLearn());
 
         content.addView(learn);
-
-        Button play = btn("🎮 Bermain");
-
-        play.setOnClickListener(v -> showGames());
-
-        content.addView(play);
     }
 
-    // =========================================================
-    // GAME MENU
-    // =========================================================
+    // =====================================================
+    // GAMES
+    // =====================================================
 
     private void showGames() {
 
         clear();
 
-        content.addView(tv(
-                "🎮 Permainan Kata",
-                28,
-                true
-        ));
+        content.addView(text("🎮 Bermain Kata",29,true));
 
-        content.addView(tv(
-                "Bermain sambil mengingat kata yang sedang dan sudah dipelajari.",
-                17,
-                false
-        ));
+        TextView sub =
+                text(
+                        "Belajar sambil bermain. Pilih permainan favoritmu!",
+                        16,false
+                );
 
-        Button picture = btn(
-                "🖼️ Tebak Gambar\nLihat gambar lalu pilih kata Inggris"
+        sub.setTextColor(MUTED);
+
+        content.addView(sub);
+        content.addView(space(18));
+
+        addGameCard(
+                "🖼️",
+                "Tebak Gambar",
+                "Lihat gambar lalu pilih kata Inggrisnya.",
+                BLUE,
+                "picture"
         );
 
-        picture.setOnClickListener(
-                v -> startGame("picture")
+        addGameCard(
+                "🔊",
+                "Dengar & Pilih",
+                "Dengarkan suara lalu pilih artinya.",
+                PURPLE,
+                "listen"
         );
 
-        content.addView(picture);
-
-        Button listen = btn(
-                "🔊 Dengar & Pilih\nDengarkan suara lalu pilih artinya"
+        addGameCard(
+                "🧩",
+                "Cocokkan Kata",
+                "Cocokkan kata Inggris dengan artinya.",
+                GREEN,
+                "meaning"
         );
 
-        listen.setOnClickListener(
-                v -> startGame("listen")
+        addGameCard(
+                "⚡",
+                "Tantangan Cepat",
+                "Campuran soal untuk menguji kemampuanmu.",
+                PINK,
+                "quick"
+        );
+    }
+
+    private void addGameCard(
+            String icon,
+            String title,
+            String description,
+            int color,
+            String mode) {
+
+        LinearLayout c = card(Color.WHITE);
+
+        LinearLayout row = new LinearLayout(this);
+
+        row.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView emoji = centerText(icon,40,false);
+
+        emoji.setBackground(shape(color,20));
+
+        emoji.setPadding(dp(14),dp(14),dp(14),dp(14));
+
+        row.addView(emoji);
+
+        LinearLayout info = new LinearLayout(this);
+        info.setOrientation(LinearLayout.VERTICAL);
+        info.setPadding(dp(15),0,0,0);
+
+        info.addView(text(title,21,true));
+
+        TextView d = text(description,14,false);
+        d.setTextColor(MUTED);
+
+        info.addView(d);
+
+        row.addView(
+                info,
+                new LinearLayout.LayoutParams(0,-2,1)
         );
 
-        content.addView(listen);
+        c.addView(row);
 
-        Button meaning = btn(
-                "🧩 Cocokkan Kata\nCocokkan kata Inggris dengan artinya"
-        );
+        c.setOnClickListener(v -> startGame(mode));
 
-        meaning.setOnClickListener(
-                v -> startGame("meaning")
-        );
-
-        content.addView(meaning);
-
-        Button quick = btn(
-                "⚡ Tantangan Cepat\nCampuran soal untuk menguji ingatan"
-        );
-
-        quick.setOnClickListener(
-                v -> startGame("quick")
-        );
-
-        content.addView(quick);
-
-        content.addView(tv(
-                "⭐ Jawaban benar = +1 bintang\n" +
-                "❤️ Kata yang sering salah otomatis masuk latihan khusus.",
-                16,
-                false
-        ));
+        content.addView(c);
     }
 
     private List<Integer> gamePool() {
 
-        LinkedHashSet<Integer> set =
-                new LinkedHashSet<>();
+        LinkedHashSet<Integer> set = new LinkedHashSet<>();
 
         set.addAll(todayWords());
 
@@ -813,8 +898,7 @@ public class MainActivity extends Activity
         for (int i=0;i<words.length;i++) {
 
             if (prefs.getBoolean("known_"+i,false)
-                    ||
-                prefs.getBoolean("hard_"+i,false))
+                    || prefs.getBoolean("hard_"+i,false))
 
                 set.add(i);
         }
@@ -826,8 +910,7 @@ public class MainActivity extends Activity
 
         while(result.size()<10) {
 
-            int idx =
-                    random.nextInt(words.length);
+            int idx = random.nextInt(words.length);
 
             if (!result.contains(idx))
                 result.add(idx);
@@ -844,16 +927,12 @@ public class MainActivity extends Activity
 
         if (pool.size()>10)
 
-            pool = new ArrayList<>(
-                    pool.subList(0,10)
-            );
+            pool =
+                    new ArrayList<>(
+                            pool.subList(0,10)
+                    );
 
-        showGameQuestion(
-                mode,
-                pool,
-                0,
-                0
-        );
+        showGameQuestion(mode,pool,0,0);
     }
 
     private void showGameQuestion(
@@ -867,78 +946,68 @@ public class MainActivity extends Activity
         int idx = pool.get(pos);
         Word w = words[idx];
 
-        content.addView(tv(
-                "🎮 " +
-                gameTitle(mode) +
-                "\nSoal " +
-                (pos+1) +
-                "/" +
-                pool.size() +
-                "   ⭐ " +
-                score,
-                21,
-                true
-        ));
+        content.addView(
+                text(
+                        gameTitle(mode)+" • "+(pos+1)+"/"+pool.size(),
+                        22,true
+                )
+        );
+
+        content.addView(
+                text("⭐ Skor "+score,16,false)
+        );
+
+        content.addView(space(15));
 
         boolean englishAnswers =
                 mode.equals("picture")
-                ||
-                (mode.equals("quick") && pos%2==0);
+                        ||
+                        (mode.equals("quick") && pos%2==0);
 
         String question;
 
         if (mode.equals("picture"))
 
-            question =
-                    w.icon +
-                    "\n\nApa bahasa Inggrisnya?";
+            question = w.icon+"\nApa bahasa Inggrisnya?";
 
         else if (mode.equals("listen"))
 
-            question =
-                    "🔊\n\nDengarkan lalu pilih artinya";
+            question = "🔊\nDengarkan lalu pilih artinya";
 
         else if (mode.equals("meaning"))
 
-            question =
-                    "Apa arti kata:\n\n" +
-                    w.en.toUpperCase();
+            question = "Apa arti kata:\n"+w.en;
 
         else if (englishAnswers)
 
-            question =
-                    w.icon +
-                    "\n\nPilih kata Inggris yang benar";
+            question = w.icon+"\nPilih kata Inggris yang benar";
 
         else
 
-            question =
-                    "Apa arti:\n\n\"" +
-                    w.en +
-                    "\"?";
+            question = "Apa arti \""+w.en+"\"?";
 
-        TextView q = tv(question,30,true);
+        LinearLayout qCard = card(Color.WHITE);
 
-        q.setGravity(Gravity.CENTER);
-
-        content.addView(q);
+        qCard.addView(centerText(question,28,true));
 
         if (mode.equals("listen")) {
 
-            Button play = btn("🔊 PUTAR SUARA");
+            Button play =
+                    modernButton("🔊 Putar Suara",BLUE);
 
             play.setOnClickListener(v -> speak(w.en));
 
-            content.addView(play);
+            qCard.addView(play);
 
             speak(w.en);
         }
 
+        content.addView(qCard);
+
         String correct =
                 englishAnswers ? w.en : w.id;
 
-        List<String> options =
-                new ArrayList<>();
+        List<String> options = new ArrayList<>();
 
         options.add(correct);
 
@@ -960,51 +1029,39 @@ public class MainActivity extends Activity
 
         for (String option : options) {
 
-            Button b = btn(option);
+            Button b = modernButton(option,PURPLE);
 
             b.setOnClickListener(v -> {
 
-                boolean ok =
-                        option.equals(correct);
+                boolean ok = option.equals(correct);
 
                 int newScore =
-                        score + (ok ? 1 : 0);
+                        score+(ok ? 1 : 0);
 
                 if (ok) {
 
-                    int stars =
-                            prefs.getInt("stars",0)+1;
-
                     prefs.edit()
-                            .putInt("stars",stars)
+                            .putInt(
+                                    "stars",
+                                    prefs.getInt("stars",0)+1
+                            )
                             .apply();
 
-                    toast("Benar! +1 ⭐");
+                    toast("Benar! ⭐");
 
                 } else {
 
                     int misses =
-                            prefs.getInt(
-                                    "miss_"+idx,
-                                    0
-                            ) + 1;
+                            prefs.getInt("miss_"+idx,0)+1;
 
                     SharedPreferences.Editor e =
                             prefs.edit()
-                                    .putInt(
-                                            "miss_"+idx,
-                                            misses
-                                    );
+                                    .putInt("miss_"+idx,misses);
 
                     if (misses>=2)
 
-                        e.putBoolean(
-                                "hard_"+idx,
-                                true
-                        ).putString(
-                                "hardtype_"+idx,
-                                "memory"
-                        );
+                        e.putBoolean("hard_"+idx,true)
+                                .putString("hardtype_"+idx,"memory");
 
                     e.apply();
 
@@ -1036,109 +1093,80 @@ public class MainActivity extends Activity
     private String gameTitle(String mode) {
 
         if (mode.equals("picture"))
-            return "Tebak Gambar";
+            return "🖼️ Tebak Gambar";
 
         if (mode.equals("listen"))
-            return "Dengar & Pilih";
+            return "🔊 Dengar & Pilih";
 
         if (mode.equals("meaning"))
-            return "Cocokkan Kata";
+            return "🧩 Cocokkan Kata";
 
-        return "Tantangan Cepat";
+        return "⚡ Tantangan Cepat";
     }
 
-    private void showGameResult(
-            String mode,
-            int score,
-            int total) {
+    private void showGameResult(String mode,int score,int total) {
 
         clear();
 
-        String medal;
+        LinearLayout c =
+                card(Color.rgb(255,244,215));
 
-        if (score == total)
-            medal = "🏆 SEMPURNA!";
-        else if (score >= total*0.7)
-            medal = "🌟 HEBAT!";
-        else
-            medal = "💪 AYO LATIH LAGI!";
+        c.addView(centerText("🏆",70,false));
 
-        content.addView(tv(
-                medal,
-                30,
-                true
-        ));
-
-        content.addView(tv(
-                gameTitle(mode) +
-                "\n\nSkor: " +
-                score +
-                " / " +
-                total +
-                "\n⭐ Total bintang: " +
-                prefs.getInt("stars",0),
-                22,
-                true
-        ));
-
-        Button again = btn("🔁 Main Lagi");
-
-        again.setOnClickListener(
-                v -> startGame(mode)
+        c.addView(
+                centerText(
+                        "Permainan Selesai!",
+                        27,true
+                )
         );
+
+        c.addView(
+                centerText(
+                        gameTitle(mode)+
+                                "\n\nSkor "+score+" / "+total+
+                                "\n⭐ Total bintang "+
+                                prefs.getInt("stars",0),
+                        20,true
+                )
+        );
+
+        content.addView(c);
+
+        Button again =
+                modernButton("🔁 Main Lagi",PURPLE);
+
+        again.setOnClickListener(v -> startGame(mode));
 
         content.addView(again);
 
-        Button menu = btn(
-                "🎮 Pilih Permainan Lain"
-        );
+        Button games =
+                modernButton("🎮 Pilih Permainan",BLUE);
 
-        menu.setOnClickListener(
-                v -> showGames()
-        );
+        games.setOnClickListener(v -> showGames());
 
-        content.addView(menu);
-
-        Button learn = btn(
-                "📚 Kembali Belajar"
-        );
-
-        learn.setOnClickListener(
-                v -> showLearnMenu()
-        );
-
-        content.addView(learn);
-
-        Button home = btn(
-                "🏠 Menu Utama"
-        );
-
-        home.setOnClickListener(
-                v -> showMainMenu()
-        );
-
-        content.addView(home);
+        content.addView(games);
     }
 
-    // =========================================================
+    // =====================================================
     // DIFFICULT WORDS
-    // =========================================================
+    // =====================================================
 
     private void showDifficult() {
 
         clear();
 
-        content.addView(tv(
-                "❤️ Latihan Khusus",
-                27,
-                true
-        ));
+        content.addView(text("❤️ Latihan Khusus",29,true));
 
-        content.addView(tv(
-                "Di sini tersimpan kata yang sulit dihafal atau diucapkan.",
-                16,
-                false
-        ));
+        TextView sub =
+                text(
+                        "Kita ulang kata yang masih terasa sulit.",
+                        16,false
+                );
+
+        sub.setTextColor(MUTED);
+
+        content.addView(sub);
+        content.addView(space(16));
 
         boolean any = false;
 
@@ -1158,88 +1186,81 @@ public class MainActivity extends Activity
                             "memory"
                     );
 
-            LinearLayout card =
-                    new LinearLayout(this);
+            LinearLayout c = card(Color.WHITE);
 
-            card.setOrientation(LinearLayout.VERTICAL);
-            card.setPadding(16,16,16,16);
-            card.setBackgroundColor(Color.WHITE);
+            c.addView(centerText(w.icon,55,false));
 
-            TextView word = tv(
-                    w.icon +
-                    "  " +
-                    w.en.toUpperCase() +
-                    "\n" +
-                    w.id +
-                    "\n\n" +
-                    (type.equals("pronounce")
-                            ? "🗣️ Sulit diucapkan"
-                            : "🧠 Sulit dihafal"),
-                    20,
-                    true
-            );
-
-            word.setGravity(Gravity.CENTER);
-
-            card.addView(word);
-
-            Button speak = btn(
-                    "🔊 Latih Pengucapan"
-            );
-
-            speak.setOnClickListener(v ->
-                    speak(
-                            w.en + ". " +
-                            w.en + ". " +
-                            w.en
+            c.addView(
+                    centerText(
+                            w.en+" • "+w.id,
+                            22,true
                     )
             );
 
-            card.addView(speak);
+            TextView reason =
+                    centerText(
+                            type.equals("pronounce")
+                                    ? "🗣️ Perlu latihan pengucapan"
+                                    : "🧠 Perlu latihan menghafal",
+                            15,false
+                    );
 
-            Button done = btn(
-                    "✅ Sekarang Sudah Bisa"
+            reason.setTextColor(MUTED);
+
+            c.addView(reason);
+            c.addView(space(8));
+
+            Button speak =
+                    modernButton(
+                            "🔊 Latih Pengucapan",
+                            BLUE
+                    );
+
+            speak.setOnClickListener(v ->
+                    speak(w.en+". "+w.en+". "+w.en)
             );
+
+            c.addView(speak);
+
+            Button done =
+                    modernButton(
+                            "✅ Sekarang Sudah Bisa",
+                            GREEN
+                    );
 
             done.setOnClickListener(v -> {
 
                 prefs.edit()
-                        .putBoolean(
-                                "hard_"+idx,
-                                false
-                        )
+                        .putBoolean("hard_"+idx,false)
                         .apply();
 
                 showDifficult();
             });
 
-            card.addView(done);
+            c.addView(done);
 
-            LinearLayout.LayoutParams lp =
-                    new LinearLayout.LayoutParams(-1,-2);
-
-            lp.setMargins(0,10,0,15);
-
-            content.addView(card,lp);
+            content.addView(c);
         }
 
         if (!any) {
 
-            TextView good = tv(
-                    "🎉 Hebat!\n\nBelum ada kata yang masuk latihan khusus.",
-                    21,
-                    true
-            );
+            LinearLayout c =
+                    card(Color.rgb(230,248,239));
 
-            good.setGravity(Gravity.CENTER);
+            c.addView(centerText("🎉",65,false));
+            c.addView(centerText("Hebat!",26,true));
+            c.addView(centerText(
+                    "Belum ada kata yang perlu latihan khusus.",
+                    16,false
+            ));
 
-            content.addView(good);
+            content.addView(c);
         }
     }
 
-    // =========================================================
-    // PARENT DASHBOARD
-    // =========================================================
+    // =====================================================
+    // PARENT
+    // =====================================================
 
     private void showParent() {
 
@@ -1256,10 +1277,7 @@ public class MainActivity extends Activity
                 hard++;
 
                 if ("pronounce".equals(
-                        prefs.getString(
-                                "hardtype_"+i,
-                                ""
-                        )
+                        prefs.getString("hardtype_"+i,"")
                 ))
 
                     pronunciation++;
@@ -1269,63 +1287,69 @@ public class MainActivity extends Activity
             }
         }
 
-        content.addView(tv(
-                "👨‍👩‍👧 Dashboard Orang Tua",
-                25,
-                true
-        ));
-
-        content.addView(tv(
-                "📅 Hari belajar\n" +
-                (dayNumber()+1) +
-                "\n\n⭐ Kata dikuasai\n" +
-                prefs.getInt("learned",0) +
-                " / " +
-                words.length +
-                "\n\n🏆 Bintang permainan\n" +
-                prefs.getInt("stars",0) +
-                "\n\n❤️ Perlu latihan\n" +
-                hard +
-                "\n\n🧠 Sulit dihafal\n" +
-                memory +
-                "\n\n🗣️ Sulit diucapkan\n" +
-                pronunciation,
-                19,
-                false
-        ));
-
-        if (hard == 0) {
-
-            content.addView(tv(
-                    "🌟 Perkembangan bagus. Tidak ada kata yang sedang ditandai sulit.",
-                    17,
-                    true
-            ));
-
-        } else {
-
-            content.addView(tv(
-                    "💡 Ada " +
-                    hard +
-                    " kata yang sebaiknya dilatih kembali.",
-                    17,
-                    true
-            ));
-        }
-
-        Button hardButton = btn(
-                "❤️ Buka Latihan Khusus"
+        content.addView(
+                text(
+                        "👨‍👩‍👧 Untuk Orang Tua",
+                        28,true
+                )
         );
 
-        hardButton.setOnClickListener(
-                v -> showDifficult()
+        TextView sub =
+                text(
+                        "Pantau perkembangan belajar anak.",
+                        16,false
+                );
+
+        sub.setTextColor(MUTED);
+
+        content.addView(sub);
+        content.addView(space(18));
+
+        LinearLayout progress =
+                card(Color.rgb(236,232,255));
+
+        progress.addView(text("📊 Progress Belajar",21,true));
+
+        progress.addView(space(8));
+
+        progress.addView(
+                text(
+                        "🏆 Kata dikuasai: "+
+                                prefs.getInt("learned",0)+
+
+                                "\n⭐ Bintang permainan: "+
+                                prefs.getInt("stars",0)+
+
+                                "\n🔥 Hari belajar: "+
+                                (dayNumber()+1),
+
+                        18,false
+                )
         );
 
-        content.addView(hardButton);
+        content.addView(progress);
 
-        Button reset = btn(
-                "⚙️ Reset Semua Progress"
+        LinearLayout difficult =
+                card(Color.rgb(255,232,241));
+
+        difficult.addView(text("❤️ Perlu Perhatian",21,true));
+
+        difficult.addView(
+                text(
+                        "Total perlu latihan: "+hard+
+                                "\n🧠 Sulit dihafal: "+memory+
+                                "\n🗣️ Sulit diucapkan: "+pronunciation,
+                        18,false
+                )
         );
+
+        content.addView(difficult);
+
+        Button reset =
+                modernButton(
+                        "⚙️ Reset Semua Progress",
+                        PINK
+                );
 
         reset.setOnClickListener(v ->
 
@@ -1334,13 +1358,10 @@ public class MainActivity extends Activity
                         .setTitle("Reset progress?")
 
                         .setMessage(
-                                "Semua kata yang dikuasai, bintang, kata sulit dan riwayat belajar akan dihapus."
+                                "Semua progress belajar, bintang dan daftar latihan akan dihapus."
                         )
 
-                        .setNegativeButton(
-                                "Batal",
-                                null
-                        )
+                        .setNegativeButton("Batal",null)
 
                         .setPositiveButton(
                                 "Reset",
@@ -1350,9 +1371,7 @@ public class MainActivity extends Activity
                                             .clear()
                                             .apply();
 
-                                    toast("Progress direset");
-
-                                    showMainMenu();
+                                    showParent();
                                 }
                         )
 
@@ -1362,27 +1381,27 @@ public class MainActivity extends Activity
         content.addView(reset);
     }
 
-    // =========================================================
+    // =====================================================
     // TTS
-    // =========================================================
+    // =====================================================
 
-    private void speak(String text) {
+    private void speak(String value) {
 
         if (tts != null)
 
             tts.speak(
-                    text,
+                    value,
                     TextToSpeech.QUEUE_FLUSH,
                     null,
                     "EnglishKids"
             );
     }
 
-    private void toast(String text) {
+    private void toast(String value) {
 
         Toast.makeText(
                 this,
-                text,
+                value,
                 Toast.LENGTH_SHORT
         ).show();
     }
@@ -1402,10 +1421,11 @@ public class MainActivity extends Activity
     protected void onDestroy() {
 
         if (tts != null) {
+
             tts.stop();
             tts.shutdown();
         }
 
         super.onDestroy();
     }
-}
+                }
