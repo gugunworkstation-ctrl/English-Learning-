@@ -751,9 +751,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 .replaceAll("[^a-z0-9]+", "_")
                 .replaceAll("^_+|_+$", "");
 
-        int id = getResources().getIdentifier("v2_" + key, "drawable", getPackageName());
+        // Final verified artwork is preferred.
+        int id = getResources().getIdentifier("v3_" + key, "drawable", getPackageName());
+
+        // Keep previous assets as safe fallbacks.
+        if (id == 0) id = getResources().getIdentifier("v2_" + key, "drawable", getPackageName());
         if (id == 0) id = getResources().getIdentifier("word_" + key, "drawable", getPackageName());
         if (id == 0) id = getResources().getIdentifier("scene_" + key, "drawable", getPackageName());
+
         return id;
     }
 
