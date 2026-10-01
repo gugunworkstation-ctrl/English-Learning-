@@ -29,7 +29,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     // LITTLE LINGO COLORS
     // =====================================================
 
-    private final int BG = Color.rgb(255, 250, 235);
+    // Lebih bersih daripada background cream lama.
+    private final int BG = Color.rgb(250, 253, 255);
+
     private final int TEXT = Color.rgb(45, 54, 72);
     private final int MUTED = Color.rgb(105, 112, 125);
 
@@ -65,7 +67,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
     }
 
-    // Dataset dikelola oleh WordData.java
+    // Dataset tetap menggunakan WordData.java.
+    // Tidak mengubah dataset/progress yang sudah bekerja.
     private final Word[] words = WordData.getWords();
 
     // =====================================================
@@ -80,7 +83,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         prefs = getSharedPreferences("progress", MODE_PRIVATE);
         tts = new TextToSpeech(this, this);
 
-        getWindow().setStatusBarColor(BLUE);
+        // Status bar disamakan dengan header.
+        getWindow().setStatusBarColor(
+                Color.rgb(255, 215, 65)
+        );
+
         getWindow().setNavigationBarColor(Color.WHITE);
 
         buildShell();
@@ -92,23 +99,30 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     // =====================================================
 
     private int dp(int value) {
+
         return (int) (
                 value *
-                getResources().getDisplayMetrics().density +
-                0.5f
+                        getResources()
+                                .getDisplayMetrics()
+                                .density +
+                        0.5f
         );
     }
 
     private GradientDrawable shape(int color, int radius) {
 
         GradientDrawable g = new GradientDrawable();
+
         g.setColor(color);
         g.setCornerRadius(dp(radius));
 
         return g;
     }
 
-    private TextView text(String value, int size, boolean bold) {
+    private TextView text(
+            String value,
+            int size,
+            boolean bold) {
 
         TextView v = new TextView(this);
 
@@ -118,15 +132,28 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         v.setLineSpacing(0, 1.08f);
 
         if (bold) {
-            v.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+
+            v.setTypeface(
+                    Typeface.DEFAULT,
+                    Typeface.BOLD
+            );
         }
 
         return v;
     }
 
-    private TextView centerText(String value, int size, boolean bold) {
+    private TextView centerText(
+            String value,
+            int size,
+            boolean bold) {
 
-        TextView v = text(value, size, bold);
+        TextView v =
+                text(
+                        value,
+                        size,
+                        bold
+                );
+
         v.setGravity(Gravity.CENTER);
 
         return v;
@@ -148,9 +175,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     private LinearLayout card(int color) {
 
-        LinearLayout c = new LinearLayout(this);
+        LinearLayout c =
+                new LinearLayout(this);
 
-        c.setOrientation(LinearLayout.VERTICAL);
+        c.setOrientation(
+                LinearLayout.VERTICAL
+        );
 
         c.setPadding(
                 dp(18),
@@ -159,7 +189,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 dp(18)
         );
 
-        c.setBackground(shape(color, 24));
+        c.setBackground(
+                shape(
+                        color,
+                        24
+                )
+        );
+
         c.setElevation(dp(3));
 
         LinearLayout.LayoutParams lp =
@@ -180,9 +216,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         return c;
     }
 
-    private Button button(String label, int color) {
+    private Button button(
+            String label,
+            int color) {
 
-        Button b = new Button(this);
+        Button b =
+                new Button(this);
 
         b.setText(label);
         b.setTextSize(16);
@@ -203,7 +242,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 dp(8)
         );
 
-        b.setBackground(shape(color, 18));
+        b.setBackground(
+                shape(
+                        color,
+                        18
+                )
+        );
 
         LinearLayout.LayoutParams lp =
                 new LinearLayout.LayoutParams(
@@ -227,8 +271,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         content.removeAllViews();
 
-        scroll.post(() ->
-                scroll.scrollTo(0, 0)
+        scroll.post(
+                () -> scroll.scrollTo(0, 0)
         );
     }
 
@@ -239,23 +283,33 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private void buildShell() {
 
         root = new LinearLayout(this);
-        root.setOrientation(LinearLayout.VERTICAL);
+
+        root.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
         root.setBackgroundColor(BG);
 
         buildHeader();
 
-        scroll = new ScrollView(this);
+        scroll =
+                new ScrollView(this);
+
         scroll.setFillViewport(true);
         scroll.setClipToPadding(false);
 
-        content = new LinearLayout(this);
-        content.setOrientation(LinearLayout.VERTICAL);
+        content =
+                new LinearLayout(this);
+
+        content.setOrientation(
+                LinearLayout.VERTICAL
+        );
 
         content.setPadding(
                 dp(18),
                 dp(18),
                 dp(18),
-                dp(28)
+                dp(42)
         );
 
         scroll.addView(content);
@@ -273,6 +327,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         setContentView(root);
 
+        // Bottom navigation aman dari navigation bar Android.
         root.setOnApplyWindowInsetsListener(
                 (v, insets) -> {
 
@@ -297,77 +352,134 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     // =====================================================
-    // HEADER
+    // HEADER — NEW LITTLE LINGO UI
     // =====================================================
 
     private void buildHeader() {
 
-        LinearLayout header = new LinearLayout(this);
-
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-
-        header.setPadding(
-                dp(18),
-                dp(12),
-                dp(18),
-                dp(12)
-        );
-
-        header.setBackgroundColor(
-                Color.rgb(255, 220, 79)
-        );
-
-        TextView logo =
-                centerText("🌈", 34, false);
-
-        header.addView(logo);
-
-        LinearLayout names =
+        LinearLayout header =
                 new LinearLayout(this);
 
-        names.setOrientation(LinearLayout.VERTICAL);
+        header.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
 
-        names.setPadding(
-                dp(10),
-                0,
-                0,
-                0
+        header.setGravity(
+                Gravity.CENTER_VERTICAL
+        );
+
+        // Yellow pastel gradient.
+        GradientDrawable headerBg =
+                new GradientDrawable(
+                        GradientDrawable.Orientation.LEFT_RIGHT,
+                        new int[]{
+                                Color.rgb(255, 211, 61),
+                                Color.rgb(255, 239, 118)
+                        }
+                );
+
+        header.setBackground(headerBg);
+
+        // ---------------------------------------------
+        // BRAND
+        // ---------------------------------------------
+
+        LinearLayout brand =
+                new LinearLayout(this);
+
+        brand.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
+        brand.setGravity(
+                Gravity.CENTER_VERTICAL
         );
 
         TextView title =
                 text(
-                        "Little Lingo",
+                        "Little Lingo 🌈",
                         25,
                         true
                 );
 
         title.setTextColor(
-                Color.rgb(57, 51, 89)
+                Color.rgb(72, 52, 101)
         );
 
         TextView owner =
                 text(
-                        "Made by Alisha",
+                        "Made by Alisha  ✨",
                         11,
                         false
                 );
 
         owner.setTextColor(
-                Color.rgb(106, 83, 126)
+                Color.rgb(112, 82, 126)
         );
 
-        names.addView(title);
-        names.addView(owner);
+        brand.addView(title);
+        brand.addView(owner);
 
-        header.addView(names);
+        header.addView(
+                brand,
+                new LinearLayout.LayoutParams(
+                        0,
+                        -2,
+                        1
+                )
+        );
 
-        TextView stars =
-                text(" ✨", 24, false);
+        // ---------------------------------------------
+        // HAPPY CHILD ILLUSTRATION
+        // ---------------------------------------------
 
-        header.addView(stars);
+        ImageView child =
+                new ImageView(this);
+
+        child.setImageResource(
+                R.drawable.header_child
+        );
+
+        child.setScaleType(
+                ImageView.ScaleType.CENTER_INSIDE
+        );
+
+        header.addView(
+                child,
+                new LinearLayout.LayoutParams(
+                        dp(86),
+                        dp(86)
+                )
+        );
+
+        // Default padding prevents a zero-height-looking
+        // header before Android sends window insets.
+        header.setPadding(
+                dp(18),
+                dp(12),
+                dp(12),
+                dp(8)
+        );
 
         root.addView(header);
+
+        // Header title no longer sits under clock/battery.
+        header.setOnApplyWindowInsetsListener(
+                (v, insets) -> {
+
+                    int top =
+                            insets.getSystemWindowInsetTop();
+
+                    header.setPadding(
+                            dp(18),
+                            top + dp(8),
+                            dp(12),
+                            dp(8)
+                    );
+
+                    return insets;
+                }
+        );
     }
 
     // =====================================================
@@ -383,8 +495,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 LinearLayout.HORIZONTAL
         );
 
-        bottomNav.setGravity(Gravity.CENTER);
-        bottomNav.setBackgroundColor(Color.WHITE);
+        bottomNav.setGravity(
+                Gravity.CENTER
+        );
+
+        bottomNav.setBackgroundColor(
+                Color.WHITE
+        );
 
         navItems.clear();
 
@@ -474,9 +591,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     private void setActiveNav(int active) {
 
-        for (int i = 0; i < navItems.size(); i++) {
+        for (int i = 0;
+             i < navItems.size();
+             i++) {
 
-            TextView v = navItems.get(i);
+            TextView v =
+                    navItems.get(i);
 
             if (i == active) {
 
@@ -492,6 +612,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             } else {
 
                 v.setTextColor(MUTED);
+
                 v.setBackgroundColor(
                         Color.TRANSPARENT
                 );
@@ -512,7 +633,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 );
 
         long now =
-                LocalDate.now().toEpochDay();
+                LocalDate.now()
+                        .toEpochDay();
 
         if (first == 0) {
 
@@ -541,7 +663,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 (dayNumber() * 5)
                         % words.length;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0;
+             i < 5;
+             i++) {
 
             result.add(
                     (start + i)
@@ -567,7 +691,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 (day * 5)
                         % words.length;
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0;
+             i < 5;
+             i++) {
 
             result.add(
                     (start + i)
@@ -721,12 +847,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         int hard = 0;
 
-        for (int i = 0; i < words.length; i++) {
+        for (int i = 0;
+             i < words.length;
+             i++) {
 
             if (prefs.getBoolean(
                     "hard_" + i,
                     false
             )) {
+
                 hard++;
             }
         }
@@ -821,9 +950,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         content.addView(space(9));
 
         for (int idx : todayWords()) {
+
             addWordCard(idx);
         }
     }
+
+    // =====================================================
+    // NEW VISUAL WORD CARD
+    // =====================================================
 
     private void addWordCard(int idx) {
 
@@ -845,37 +979,119 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                                 ]
                 );
 
-        TextView icon =
-                centerText(
-                        w.icon,
-                        72,
-                        false
-                );
+        // CAT gets the new full illustrated scene.
+        if ("cat".equalsIgnoreCase(w.en)) {
 
-        icon.setPadding(
-                0,
-                dp(5),
-                0,
-                dp(5)
-        );
+            ImageView scene =
+                    new ImageView(this);
 
-        c.addView(icon);
+            scene.setImageResource(
+                    R.drawable.scene_cat
+            );
 
-        c.addView(
+            scene.setScaleType(
+                    ImageView.ScaleType.CENTER_CROP
+            );
+
+            scene.setAdjustViewBounds(true);
+
+            scene.setBackground(
+                    shape(
+                            Color.WHITE,
+                            20
+                    )
+            );
+
+            LinearLayout.LayoutParams sceneLp =
+                    new LinearLayout.LayoutParams(
+                            -1,
+                            dp(190)
+                    );
+
+            sceneLp.setMargins(
+                    0,
+                    0,
+                    0,
+                    dp(14)
+            );
+
+            c.addView(
+                    scene,
+                    sceneLp
+            );
+
+        } else {
+
+            // Existing dataset remains compatible.
+            // Until a dedicated illustration exists,
+            // the dataset emoji is presented in a
+            // cleaner visual panel.
+
+            TextView icon =
+                    centerText(
+                            w.icon,
+                            76,
+                            false
+                    );
+
+            icon.setGravity(
+                    Gravity.CENTER
+            );
+
+            icon.setBackground(
+                    shape(
+                            Color.argb(
+                                    150,
+                                    255,
+                                    255,
+                                    255
+                            ),
+                            20
+                    )
+            );
+
+            LinearLayout.LayoutParams iconLp =
+                    new LinearLayout.LayoutParams(
+                            -1,
+                            dp(150)
+                    );
+
+            iconLp.setMargins(
+                    0,
+                    0,
+                    0,
+                    dp(14)
+            );
+
+            c.addView(
+                    icon,
+                    iconLp
+            );
+        }
+
+        TextView english =
                 centerText(
                         w.en.toUpperCase(),
-                        27,
+                        29,
                         true
-                )
+                );
+
+        english.setTextColor(
+                Color.rgb(48, 54, 75)
         );
 
-        c.addView(
+        c.addView(english);
+
+        TextView indonesia =
                 centerText(
                         w.id,
                         18,
                         false
-                )
-        );
+                );
+
+        indonesia.setTextColor(MUTED);
+
+        c.addView(indonesia);
 
         TextView category =
                 centerText(
@@ -884,10 +1100,12 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                         false
                 );
 
-        category.setTextColor(MUTED);
+        category.setTextColor(
+                Color.rgb(110, 115, 130)
+        );
 
         c.addView(category);
-        c.addView(space(10));
+        c.addView(space(12));
 
         Button speak =
                 button(
@@ -929,7 +1147,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 )
         );
 
-        Space gap = new Space(this);
+        Space gap =
+                new Space(this);
 
         row.addView(
                 gap,
@@ -1038,12 +1257,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 new ArrayList<>();
 
         if (dayNumber() > 0) {
+
             pool.addAll(
                     yesterdayWords()
             );
         }
 
-        for (int i = 0; i < words.length; i++) {
+        for (int i = 0;
+             i < words.length;
+             i++) {
 
             if (prefs.getBoolean(
                     "hard_" + i,
@@ -1118,8 +1340,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         clear();
 
-        int idx = pool.get(pos);
-        Word w = words[idx];
+        int idx =
+                pool.get(pos);
+
+        Word w =
+                words[idx];
 
         content.addView(
                 text(
@@ -1166,6 +1391,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         );
 
         question.addView(sound);
+
         content.addView(question);
 
         List<Integer> options =
@@ -1216,7 +1442,8 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     );
                 }
 
-                if (pos + 1 < pool.size()) {
+                if (pos + 1 <
+                        pool.size()) {
 
                     showQuiz(
                             pool,
@@ -1264,7 +1491,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         c.addView(
                 centerText(
-                        score + " / " + total,
+                        score +
+                                " / " +
+                                total,
                         26,
                         true
                 )
@@ -1410,6 +1639,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 );
 
         desc.setTextColor(MUTED);
+
         info.addView(desc);
 
         row.addView(
@@ -1439,6 +1669,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     // =====================================================
+    // BLOK 1/2 BERAKHIR DI SINI
+    // JANGAN TAMBAHKAN } PENUTUP CLASS.
+    // BLOK 2/2 DISAMBUNG TEPAT DI BAWAH BARIS INI.
+    // =====================================================
+    // =====================================================
     // GAME ENGINE
     // =====================================================
 
@@ -1450,10 +1685,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         set.addAll(todayWords());
 
         if (dayNumber() > 0) {
-
-            set.addAll(
-                    yesterdayWords()
-            );
+            set.addAll(yesterdayWords());
         }
 
         for (int i = 0; i < words.length; i++) {
@@ -1512,7 +1744,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         }
 
         if (pool.isEmpty()) {
-            toast("Dataset kata masih kosong.");
+
+            toast(
+                    "Dataset kata masih kosong."
+            );
+
             return;
         }
 
@@ -1566,8 +1802,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         clear();
 
-        int idx = pool.get(pos);
-        Word w = words[idx];
+        int idx =
+                pool.get(pos);
+
+        Word w =
+                words[idx];
 
         content.addView(
                 text(
@@ -1603,13 +1842,50 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         if (mode.equals("picture")) {
 
-            question.addView(
-                    centerText(
-                            w.icon,
-                            90,
-                            false
-                    )
-            );
+            // CAT menggunakan ilustrasi baru.
+            if ("cat".equalsIgnoreCase(w.en)) {
+
+                ImageView scene =
+                        new ImageView(this);
+
+                scene.setImageResource(
+                        R.drawable.scene_cat
+                );
+
+                scene.setScaleType(
+                        ImageView.ScaleType.CENTER_CROP
+                );
+
+                scene.setAdjustViewBounds(true);
+
+                LinearLayout.LayoutParams sceneLp =
+                        new LinearLayout.LayoutParams(
+                                -1,
+                                dp(190)
+                        );
+
+                sceneLp.setMargins(
+                        0,
+                        0,
+                        0,
+                        dp(12)
+                );
+
+                question.addView(
+                        scene,
+                        sceneLp
+                );
+
+            } else {
+
+                question.addView(
+                        centerText(
+                                w.icon,
+                                90,
+                                false
+                        )
+                );
+            }
 
             question.addView(
                     centerText(
@@ -1639,13 +1915,47 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         } else {
 
-            question.addView(
-                    centerText(
-                            w.icon,
-                            85,
-                            false
-                    )
-            );
+            if ("cat".equalsIgnoreCase(w.en)) {
+
+                ImageView scene =
+                        new ImageView(this);
+
+                scene.setImageResource(
+                        R.drawable.scene_cat
+                );
+
+                scene.setScaleType(
+                        ImageView.ScaleType.CENTER_CROP
+                );
+
+                LinearLayout.LayoutParams sceneLp =
+                        new LinearLayout.LayoutParams(
+                                -1,
+                                dp(180)
+                        );
+
+                sceneLp.setMargins(
+                        0,
+                        0,
+                        0,
+                        dp(10)
+                );
+
+                question.addView(
+                        scene,
+                        sceneLp
+                );
+
+            } else {
+
+                question.addView(
+                        centerText(
+                                w.icon,
+                                85,
+                                false
+                        )
+                );
+            }
 
             question.addView(
                     centerText(
@@ -1750,6 +2060,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         );
 
         soundCard.addView(replay);
+
         content.addView(soundCard);
 
         TextView hint =
@@ -1789,14 +2100,25 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             Word option =
                     words[optionIndex];
 
-            TextView visual =
-                    centerText(
-                            option.icon,
-                            65,
-                            false
-                    );
+            LinearLayout visualBox =
+                    new LinearLayout(this);
 
-            visual.setBackground(
+            visualBox.setOrientation(
+                    LinearLayout.VERTICAL
+            );
+
+            visualBox.setGravity(
+                    Gravity.CENTER
+            );
+
+            visualBox.setPadding(
+                    dp(6),
+                    dp(6),
+                    dp(6),
+                    dp(6)
+            );
+
+            visualBox.setBackground(
                     shape(
                             i % 2 == 0
                                     ? LIGHT_YELLOW
@@ -1805,14 +2127,46 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     )
             );
 
-            visual.setPadding(
-                    dp(10),
-                    dp(22),
-                    dp(10),
-                    dp(22)
-            );
+            if ("cat".equalsIgnoreCase(option.en)) {
 
-            visual.setOnClickListener(v ->
+                ImageView cat =
+                        new ImageView(this);
+
+                cat.setImageResource(
+                        R.drawable.scene_cat
+                );
+
+                cat.setScaleType(
+                        ImageView.ScaleType.CENTER_CROP
+                );
+
+                visualBox.addView(
+                        cat,
+                        new LinearLayout.LayoutParams(
+                                -1,
+                                -1
+                        )
+                );
+
+            } else {
+
+                TextView visual =
+                        centerText(
+                                option.icon,
+                                65,
+                                false
+                        );
+
+                visualBox.addView(
+                        visual,
+                        new LinearLayout.LayoutParams(
+                                -1,
+                                -1
+                        )
+                );
+            }
+
+            visualBox.setOnClickListener(v ->
 
                     processGameAnswer(
                             "listen",
@@ -1841,14 +2195,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             if (i < 2) {
 
                 row1.addView(
-                        visual,
+                        visualBox,
                         lp
                 );
 
             } else {
 
                 row2.addView(
-                        visual,
+                        visualBox,
                         lp
                 );
             }
@@ -1906,8 +2260,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 e.putBoolean(
                         "hard_" + idx,
                         true
-                )
-                .putString(
+                );
+
+                e.putString(
                         "hardtype_" + idx,
                         "memory"
                 );
@@ -2052,13 +2407,16 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                     "hard_" + i,
                     false
             )) {
+
                 continue;
             }
 
             any = true;
 
             final int idx = i;
-            Word w = words[i];
+
+            Word w =
+                    words[i];
 
             String type =
                     prefs.getString(
@@ -2069,13 +2427,47 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             LinearLayout c =
                     card(LIGHT_PINK);
 
-            c.addView(
-                    centerText(
-                            w.icon,
-                            65,
-                            false
-                    )
-            );
+            if ("cat".equalsIgnoreCase(w.en)) {
+
+                ImageView cat =
+                        new ImageView(this);
+
+                cat.setImageResource(
+                        R.drawable.scene_cat
+                );
+
+                cat.setScaleType(
+                        ImageView.ScaleType.CENTER_CROP
+                );
+
+                LinearLayout.LayoutParams catLp =
+                        new LinearLayout.LayoutParams(
+                                -1,
+                                dp(170)
+                        );
+
+                catLp.setMargins(
+                        0,
+                        0,
+                        0,
+                        dp(10)
+                );
+
+                c.addView(
+                        cat,
+                        catLp
+                );
+
+            } else {
+
+                c.addView(
+                        centerText(
+                                w.icon,
+                                65,
+                                false
+                        )
+                );
+            }
 
             c.addView(
                     centerText(
@@ -2141,6 +2533,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             });
 
             c.addView(done);
+
             content.addView(c);
         }
 
@@ -2277,11 +2670,15 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         difficult.addView(
                 text(
-                        "Total: " + hard +
+                        "Total: " +
+                                hard +
+
                                 "\n🧠 Hafalan: " +
                                 memory +
+
                                 "\n🗣️ Pengucapan: " +
                                 pronunciation,
+
                         18,
                         false
                 )
