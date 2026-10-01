@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="190dp"
+    android:viewportWidth="320"
+    android:viewportHeight="190">
+
+    <!-- langit -->
+    <path
+        android:fillColor="#DDF5FF"
+        android:pathData="M0,0 L320,0 L320,190 L0,190 Z" />
+
+    <!-- matahari -->
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M265,35 A20,20 0,1 0,305 35 A20,20 0,1 0,265 35" />
+
+    <!-- awan kiri -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,43 C23,32 36,29 44,36 C50,25 68,27 72,40 C85,38 92,46 90,55 L18,55 C14,49 15,45 20,43 Z" />
+
+    <!-- awan kanan -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M202,51 C205,41 217,38 225,44 C231,34 248,36 252,48 C264,46 272,53 271,61 L199,61 C196,56 197,53 202,51 Z" />
+
+    <!-- bukit -->
+    <path
+        android:fillColor="#9BE28F"
+        android:pathData="M0,133 C48,106 91,116 128,137 C174,105 226,107 320,135 L320,190 L0,190 Z" />
+
+    <!-- rumput depan -->
+    <path
+        android:fillColor="#5FCB78"
+        android:pathData="M0,154 C65,142 116,155 160,158 C213,146 266,144 320,155 L320,190 L0,190 Z" />
+
+    <!-- ekor kucing -->
+    <path
+        android:fillColor="#E99543"
+        android:pathData="M204,133 C232,119 240,139 225,149 C216,155 210,149 217,144 C224,139 220,133 210,138 Z" />
+
+    <!-- badan kucing -->
+    <path
+        android:fillColor="#F5A64D"
+        android:pathData="M123,117 C108,124 105,151 116,166 C126,179 169,180 184,166 C195,155 191,126 176,118 C162,110 138,110 123,117 Z" />
+
+    <!-- kepala -->
+    <path
+        android:fillColor="#F5A64D"
+        android:pathData="M122,77 L132,55 L146,70 C155,67 166,68 174,72 L190,57 L195,83 C203,94 199,115 187,125 C173,137 139,136 124,124 C111,113 110,91 122,77 Z" />
+
+    <!-- telinga dalam kiri -->
+    <path
+        android:fillColor="#F4878D"
+        android:pathData="M129,72 L134,62 L141,72 Z" />
+
+    <!-- telinga dalam kanan -->
+    <path
+        android:fillColor="#F4878D"
+        android:pathData="M180,73 L188,64 L190,77 Z" />
+
+    <!-- belang kepala -->
+    <path
+        android:fillColor="#D47C31"
+        android:pathData="M149,70 L153,84 L158,70 L162,84 L167,71 L165,91 L150,91 Z" />
+
+    <!-- mata kiri -->
+    <path
+        android:fillColor="#3B3B45"
+        android:pathData="M132,97 A4,5 0,1 0,140 97 A4,5 0,1 0,132 97" />
+
+    <!-- mata kanan -->
+    <path
+        android:fillColor="#3B3B45"
+        android:pathData="M171,97 A4,5 0,1 0,179 97 A4,5 0,1 0,171 97" />
+
+    <!-- hidung -->
+    <path
+        android:fillColor="#E36B78"
+        android:pathData="M153,106 L161,106 L157,112 Z" />
+
+    <!-- mulut -->
+    <path
+        android:fillColor="#704B45"
+        android:pathData="M157,111 C151,118 146,115 144,112 C148,120 154,121 157,116 C160,121 167,120 171,112 C168,115 162,118 157,111 Z" />
+
+    <!-- dada -->
+    <path
+        android:fillColor="#FFE4B7"
+        android:pathData="M139,126 C144,119 170,119 176,127 C178,144 171,161 157,164 C143,161 136,145 139,126 Z" />
+
+    <!-- kaki kiri -->
+    <path
+        android:fillColor="#F5A64D"
+        android:pathData="M124,157 C116,160 113,174 123,177 L143,177 L142,158 Z" />
+
+    <!-- kaki kanan -->
+    <path
+        android:fillColor="#F5A64D"
+        android:pathData="M172,157 L171,177 L191,177 C201,174 197,160 189,157 Z" />
+
+    <!-- bunga -->
+    <path
+        android:fillColor="#FF7FA5"
+        android:pathData="M62,154 A6,6 0,1 0,74 154 A6,6 0,1 0,62 154 M68,148 A6,6 0,1 0,68 160 A6,6 0,1 0,68 148" />
+
+    <path
+        android:fillColor="#FFD54F"
+        android:pathData="M65,151 A3,3 0,1 0,71 151 A3,3 0,1 0,65 151" />
+
+</vector>
