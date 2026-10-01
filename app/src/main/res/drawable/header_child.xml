@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="110dp"
+    android:height="110dp"
+    android:viewportWidth="110"
+    android:viewportHeight="110">
+
+    <!-- rambut belakang -->
+    <path
+        android:fillColor="#5A3825"
+        android:pathData="M55,13 C35,13 25,28 26,48 C27,66 37,77 55,77 C73,77 84,65 84,47 C84,28 75,13 55,13 Z" />
+
+    <!-- telinga kiri -->
+    <path
+        android:fillColor="#F2B38C"
+        android:pathData="M28,44 C20,42 19,56 28,58 Z" />
+
+    <!-- telinga kanan -->
+    <path
+        android:fillColor="#F2B38C"
+        android:pathData="M82,44 C90,42 91,56 82,58 Z" />
+
+    <!-- wajah -->
+    <path
+        android:fillColor="#FFD0A8"
+        android:pathData="M55,21 C38,21 29,33 30,49 C31,65 40,75 55,75 C70,75 80,64 80,48 C80,33 71,21 55,21 Z" />
+
+    <!-- rambut depan kiri -->
+    <path
+        android:fillColor="#5A3825"
+        android:pathData="M29,42 C29,24 40,16 56,16 C48,24 42,31 29,42 Z" />
+
+    <!-- rambut depan kanan -->
+    <path
+        android:fillColor="#5A3825"
+        android:pathData="M52,17 C71,15 82,28 81,44 C72,38 64,29 52,17 Z" />
+
+    <!-- mata kiri -->
+    <path
+        android:fillColor="#3E354B"
+        android:pathData="M40,47 A3.2,4 0,1 0,46.4 47 A3.2,4 0,1 0,40 47" />
+
+    <!-- mata kanan -->
+    <path
+        android:fillColor="#3E354B"
+        android:pathData="M64,47 A3.2,4 0,1 0,70.4 47 A3.2,4 0,1 0,64 47" />
+
+    <!-- highlight mata kiri -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M42,45 A1,1 0,1 0,44 45 A1,1 0,1 0,42 45" />
+
+    <!-- highlight mata kanan -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M66,45 A1,1 0,1 0,68 45 A1,1 0,1 0,66 45" />
+
+    <!-- pipi kiri -->
+    <path
+        android:fillColor="#F49AA7"
+        android:fillAlpha="0.55"
+        android:pathData="M34,56 A5,3 0,1 0,44 56 A5,3 0,1 0,34 56" />
+
+    <!-- pipi kanan -->
+    <path
+        android:fillColor="#F49AA7"
+        android:fillAlpha="0.55"
+        android:pathData="M66,56 A5,3 0,1 0,76 56 A5,3 0,1 0,66 56" />
+
+    <!-- senyum -->
+    <path
+        android:fillColor="#D75A69"
+        android:pathData="M45,58 C48,67 62,67 66,58 C61,62 51,62 45,58 Z" />
+
+    <!-- leher -->
+    <path
+        android:fillColor="#F2B38C"
+        android:pathData="M48,71 L62,71 L63,83 L47,83 Z" />
+
+    <!-- badan/baju -->
+    <path
+        android:fillColor="#8A63F6"
+        android:pathData="M31,105 C32,87 40,79 55,79 C70,79 79,87 80,105 Z" />
+
+    <!-- kerah kiri -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,79 L55,88 L50,94 L40,82 Z" />
+
+    <!-- kerah kanan -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,79 L55,88 L60,94 L70,82 Z" />
+
+    <!-- tangan melambai -->
+    <path
+        android:fillColor="#FFD0A8"
+        android:pathData="M79,88 C84,79 86,71 85,65 C84,61 87,59 89,63 L91,69 L94,62 C96,59 99,61 97,65 L94,72 L99,68 C102,66 104,69 101,72 L94,80 C91,86 89,93 88,98 Z" />
+
+    <!-- lengan -->
+    <path
+        android:fillColor="#8A63F6"
+        android:pathData="M72,86 C78,84 83,88 89,96 L82,105 L70,96 Z" />
+
+</vector>
