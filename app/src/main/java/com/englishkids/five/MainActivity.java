@@ -161,8 +161,10 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 dp(18)
         );
 
-        c.setBackground(shape(color, 24));
-        c.setElevation(dp(3));
+        GradientDrawable bg = shape(color, 26);
+        bg.setStroke(dp(1), Color.argb(28, 45, 54, 72));
+        c.setBackground(bg);
+        c.setElevation(dp(4));
 
         LinearLayout.LayoutParams lp =
                 new LinearLayout.LayoutParams(
@@ -753,11 +755,26 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         // IMPORTANT: never leave a visual answer blank.
         // Until a proper local illustration exists, use the dataset visual
         // as a safe fallback so the child can still play without reading.
-        TextView fallback = centerText(w.icon, Math.max(58, heightDp / 2), false);
-        fallback.setBackground(shape(Color.WHITE, 20));
+        LinearLayout fallback = new LinearLayout(this);
+        fallback.setOrientation(LinearLayout.VERTICAL);
+        fallback.setGravity(Gravity.CENTER);
         fallback.setPadding(dp(10), dp(10), dp(10), dp(10));
+
+        GradientDrawable fallbackBg = shape(Color.WHITE, 22);
+        fallbackBg.setStroke(dp(1), Color.argb(24, 45, 54, 72));
+        fallback.setBackground(fallbackBg);
+
+        TextView visual = centerText(w.icon, Math.max(58, heightDp / 2), false);
+        visual.setGravity(Gravity.CENTER);
+        fallback.addView(
+                visual,
+                new LinearLayout.LayoutParams(-1, 0, 1)
+        );
+
         fallback.setContentDescription(w.en);
-        fallback.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(heightDp)));
+        fallback.setLayoutParams(
+                new LinearLayout.LayoutParams(-1, dp(heightDp))
+        );
         return fallback;
     }
 
@@ -766,8 +783,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         LinearLayout box = new LinearLayout(this);
         box.setGravity(Gravity.CENTER);
         box.setPadding(dp(8), dp(8), dp(8), dp(8));
-        box.setBackground(shape(tint, 24));
-        box.addView(wordVisual(option, 118), new LinearLayout.LayoutParams(-1, dp(118)));
+        GradientDrawable choiceBg = shape(tint, 26);
+        choiceBg.setStroke(dp(1), Color.argb(26, 45, 54, 72));
+        box.setBackground(choiceBg);
+        box.setElevation(dp(3));
+        box.addView(wordVisual(option, 138), new LinearLayout.LayoutParams(-1, dp(138)));
         box.setContentDescription(option.en);
         return box;
     }
@@ -1151,13 +1171,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         LinearLayout question =
                 card(LIGHT_BLUE);
 
-        question.addView(
-                centerText(
-                        w.icon,
-                        75,
-                        false
-                )
-        );
+        View reviewArtwork = wordVisual(w, 180);
+        LinearLayout.LayoutParams reviewArtLp =
+                new LinearLayout.LayoutParams(-1, dp(180));
+        reviewArtLp.setMargins(0, 0, 0, dp(10));
+        question.addView(reviewArtwork, reviewArtLp);
 
         question.addView(
                 centerText(
@@ -1443,9 +1461,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         c.addView(row);
 
-        c.setOnClickListener(
-                v -> startGame(mode)
-        );
+        c.setOnClickListener(v -> {
+            c.animate().scaleX(0.98f).scaleY(0.98f).setDuration(70)
+                    .withEndAction(() -> {
+                        c.setScaleX(1f);
+                        c.setScaleY(1f);
+                        startGame(mode);
+                    }).start();
+        });
 
         content.addView(c);
     }
@@ -1759,6 +1782,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
             visual.setOnClickListener(v -> {
                 if (optionIndex == idx) {
+                    visual.setEnabled(false);
+                    row1.setEnabled(false);
+                    row2.setEnabled(false);
                     speak("Great! " + w.en);
                     processGameAnswer(mode, pool, pos, score, idx, true);
                 } else {
@@ -1770,7 +1796,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 }
             });
 
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(150), 1);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, dp(170), 1);
             lp.setMargins(dp(5), dp(5), dp(5), dp(5));
             if (i < 2) row1.addView(visual, lp); else row2.addView(visual, lp);
         }
@@ -1976,13 +2002,11 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
             LinearLayout c =
                     card(LIGHT_PINK);
 
-            c.addView(
-                    centerText(
-                            w.icon,
-                            65,
-                            false
-                    )
-            );
+            View hardArtwork = wordVisual(w, 165);
+            LinearLayout.LayoutParams hardArtLp =
+                    new LinearLayout.LayoutParams(-1, dp(165));
+            hardArtLp.setMargins(0, 0, 0, dp(10));
+            c.addView(hardArtwork, hardArtLp);
 
             c.addView(
                     centerText(
