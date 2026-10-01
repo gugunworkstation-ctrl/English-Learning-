@@ -2,7 +2,8 @@
 
     <application
         android:allowBackup="true"
-        android:label="English Kids 5"
+        android:label="Little Lingo"
+        android:icon="@drawable/little_lingo_icon"
         android:theme="@style/AppTheme">
 
         <activity
