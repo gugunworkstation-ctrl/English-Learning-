@@ -69,7 +69,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
      * DATASET AWAL.
      * File dataset 2000 kata akan dipisahkan setelah MainActivity ini.
      */
-    private final Word[] words = {
+    private final Word[] words = WordData.getWords();
 
             new Word("Cat","Kucing","🐱","Animals"),
             new Word("Dog","Anjing","🐶","Animals"),
