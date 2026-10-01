@@ -307,38 +307,56 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     private void buildHeader() {
 
         LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        header.setPadding(dp(16), dp(10), dp(14), dp(10));
+        header.setOrientation(LinearLayout.VERTICAL);
+        header.setGravity(Gravity.CENTER);
+        header.setBackgroundColor(Color.rgb(255, 239, 247));
 
-        GradientDrawable headerBg = new GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT,
-                new int[]{Color.rgb(255, 218, 70), Color.rgb(255, 236, 112)});
-        headerBg.setCornerRadius(0);
-        header.setBackground(headerBg);
+        int bannerRes = getResources().getIdentifier(
+                "header_little_lingo", "drawable", getPackageName());
 
-        LinearLayout brand = new LinearLayout(this);
-        brand.setOrientation(LinearLayout.VERTICAL);
+        if (bannerRes != 0) {
+            ImageView banner = new ImageView(this);
+            banner.setImageResource(bannerRes);
+            banner.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            banner.setContentDescription("Little Lingo - Made by Alisha");
+            header.addView(banner, new LinearLayout.LayoutParams(-1, dp(118)));
+        } else {
+            LinearLayout fallback = new LinearLayout(this);
+            fallback.setOrientation(LinearLayout.HORIZONTAL);
+            fallback.setGravity(Gravity.CENTER_VERTICAL);
+            fallback.setPadding(dp(16), dp(10), dp(14), dp(10));
 
-        TextView title = text("Little Lingo 🌈", 25, true);
-        title.setTextColor(Color.rgb(72, 52, 101));
-        TextView owner = text("Made by Alisha  ✨", 11, false);
-        owner.setTextColor(Color.rgb(112, 82, 126));
-        brand.addView(title);
-        brand.addView(owner);
+            GradientDrawable headerBg = new GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    new int[]{Color.rgb(255, 218, 70), Color.rgb(255, 236, 112)});
+            fallback.setBackground(headerBg);
 
-        header.addView(brand, new LinearLayout.LayoutParams(0, -2, 1));
+            LinearLayout brand = new LinearLayout(this);
+            brand.setOrientation(LinearLayout.VERTICAL);
+            TextView title = text("Little Lingo 🌈", 25, true);
+            title.setTextColor(Color.rgb(72, 52, 101));
+            TextView owner = text("Made by Alisha  ✨", 11, false);
+            owner.setTextColor(Color.rgb(112, 82, 126));
+            brand.addView(title);
+            brand.addView(owner);
+            fallback.addView(brand, new LinearLayout.LayoutParams(0, -2, 1));
 
-        ImageView child = new ImageView(this);
-        child.setImageResource(R.drawable.header_child);
-        child.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        header.addView(child, new LinearLayout.LayoutParams(dp(82), dp(82)));
+            int oldChild = getResources().getIdentifier(
+                    "header_child", "drawable", getPackageName());
+            if (oldChild != 0) {
+                ImageView child = new ImageView(this);
+                child.setImageResource(oldChild);
+                child.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+                fallback.addView(child, new LinearLayout.LayoutParams(dp(82), dp(82)));
+            }
+            header.addView(fallback);
+        }
 
         root.addView(header);
 
         header.setOnApplyWindowInsetsListener((v, insets) -> {
             int top = insets.getSystemWindowInsetTop();
-            header.setPadding(dp(16), top + dp(8), dp(14), dp(8));
+            header.setPadding(0, top, 0, 0);
             return insets;
         });
     }
@@ -732,7 +750,9 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         String key = w.en.toLowerCase(Locale.US)
                 .replaceAll("[^a-z0-9]+", "_")
                 .replaceAll("^_+|_+$", "");
-        int id = getResources().getIdentifier("word_" + key, "drawable", getPackageName());
+
+        int id = getResources().getIdentifier("v2_" + key, "drawable", getPackageName());
+        if (id == 0) id = getResources().getIdentifier("word_" + key, "drawable", getPackageName());
         if (id == 0) id = getResources().getIdentifier("scene_" + key, "drawable", getPackageName());
         return id;
     }
@@ -743,7 +763,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         if (res != 0) {
             ImageView image = new ImageView(this);
             image.setImageResource(res);
-            image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            image.setScaleType(ImageView.ScaleType.CENTER_CROP);
             image.setAdjustViewBounds(true);
             image.setBackground(shape(Color.WHITE, 20));
             image.setPadding(dp(10), dp(10), dp(10), dp(10));
