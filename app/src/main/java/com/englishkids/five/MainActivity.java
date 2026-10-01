@@ -735,17 +735,30 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         return id;
     }
 
-    private ImageView wordImage(Word w, int heightDp) {
-        ImageView image = new ImageView(this);
+    private View wordVisual(Word w, int heightDp) {
         int res = wordArtwork(w);
-        if (res != 0) image.setImageResource(res);
-        image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-        image.setAdjustViewBounds(true);
-        image.setBackground(shape(Color.WHITE, 20));
-        image.setPadding(dp(10), dp(10), dp(10), dp(10));
-        image.setContentDescription(w.en);
-        image.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(heightDp)));
-        return image;
+
+        if (res != 0) {
+            ImageView image = new ImageView(this);
+            image.setImageResource(res);
+            image.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+            image.setAdjustViewBounds(true);
+            image.setBackground(shape(Color.WHITE, 20));
+            image.setPadding(dp(10), dp(10), dp(10), dp(10));
+            image.setContentDescription(w.en);
+            image.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(heightDp)));
+            return image;
+        }
+
+        // IMPORTANT: never leave a visual answer blank.
+        // Until a proper local illustration exists, use the dataset visual
+        // as a safe fallback so the child can still play without reading.
+        TextView fallback = centerText(w.icon, Math.max(58, heightDp / 2), false);
+        fallback.setBackground(shape(Color.WHITE, 20));
+        fallback.setPadding(dp(10), dp(10), dp(10), dp(10));
+        fallback.setContentDescription(w.en);
+        fallback.setLayoutParams(new LinearLayout.LayoutParams(-1, dp(heightDp)));
+        return fallback;
     }
 
     private LinearLayout visualChoice(int optionIndex, int tint) {
@@ -754,8 +767,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
         box.setGravity(Gravity.CENTER);
         box.setPadding(dp(8), dp(8), dp(8), dp(8));
         box.setBackground(shape(tint, 24));
-        ImageView image = wordImage(option, 118);
-        box.addView(image, new LinearLayout.LayoutParams(-1, dp(118)));
+        box.addView(wordVisual(option, 118), new LinearLayout.LayoutParams(-1, dp(118)));
         box.setContentDescription(option.en);
         return box;
     }
@@ -856,7 +868,7 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                                 ]
                 );
 
-        ImageView artwork = wordImage(w, 190);
+        View artwork = wordVisual(w, 190);
         LinearLayout.LayoutParams artworkLp = new LinearLayout.LayoutParams(-1, dp(190));
         artworkLp.setMargins(0, 0, 0, dp(12));
         c.addView(artwork, artworkLp);
