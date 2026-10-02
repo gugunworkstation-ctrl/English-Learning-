@@ -238,6 +238,14 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
         content.removeAllViews();
 
+        // Default spacing for normal pages.
+        content.setPadding(
+                dp(18),
+                dp(18),
+                dp(18),
+                dp(42)
+        );
+
         scroll.post(() ->
                 scroll.scrollTo(0, 0)
         );
@@ -878,64 +886,136 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     private void showLearnCard() {
+
         clear();
+
         if (learnPosition >= learnSession.size()) {
             showLearnBatchResult();
             return;
         }
 
+        // Learning mode is intentionally compact so one card fits
+        // comfortably on one phone screen without unnecessary scrolling.
+        content.setPadding(
+                dp(14),
+                dp(7),
+                dp(14),
+                dp(8)
+        );
+
         final int idx = learnSession.get(learnPosition);
         final Word w = words[idx];
 
-        content.addView(text("📚 Belajar Kata", 28, true));
-        TextView subtitle = text("Dengar • Lihat • Ingat", 16, false);
-        subtitle.setTextColor(MUTED);
-        content.addView(subtitle);
-        content.addView(space(12));
+        LinearLayout top = new LinearLayout(this);
+        top.setOrientation(LinearLayout.HORIZONTAL);
+        top.setGravity(Gravity.CENTER_VERTICAL);
 
-        LinearLayout progress = card(LIGHT_YELLOW);
-        progress.addView(centerText("Kata " + (learnPosition + 1) + " / " + learnSession.size(), 18, true));
+        TextView title = text("📚 Belajar Kata", 22, true);
+        top.addView(title, new LinearLayout.LayoutParams(0, -2, 1));
+
+        TextView counter = centerText(
+                (learnPosition + 1) + " / " + learnSession.size(),
+                16,
+                true
+        );
+        counter.setTextColor(PURPLE);
+        counter.setPadding(dp(12), dp(5), dp(12), dp(5));
+        counter.setBackground(shape(LIGHT_PURPLE, 16));
+        top.addView(counter);
+
+        content.addView(top);
+        content.addView(space(5));
+
+        // Thin progress strip instead of a large progress card.
+        LinearLayout progress = new LinearLayout(this);
+        progress.setOrientation(LinearLayout.HORIZONTAL);
+        progress.setGravity(Gravity.CENTER);
+        progress.setPadding(dp(10), dp(5), dp(10), dp(5));
+        progress.setBackground(shape(LIGHT_YELLOW, 16));
 
         StringBuilder dots = new StringBuilder();
         for (int i = 0; i < learnSession.size(); i++) {
             dots.append(i < learnPosition ? "●" : (i == learnPosition ? "◉" : "○"));
-            if (i + 1 < learnSession.size()) dots.append("   ");
+            if (i + 1 < learnSession.size()) dots.append("  ");
         }
-        TextView dotView = centerText(dots.toString(), 22, true);
+
+        TextView dotView = centerText(dots.toString(), 17, true);
         dotView.setTextColor(PURPLE);
         progress.addView(dotView);
-        TextView target = centerText("🌟 Target 5 kata • boleh lanjut lagi", 13, false);
-        target.setTextColor(MUTED);
-        progress.addView(target);
-        content.addView(progress);
 
-        int[] cardColors = {LIGHT_BLUE, LIGHT_PINK, LIGHT_GREEN, LIGHT_YELLOW, LIGHT_PURPLE};
-        LinearLayout c = card(cardColors[learnPosition % cardColors.length]);
+        content.addView(
+                progress,
+                new LinearLayout.LayoutParams(-1, dp(34))
+        );
 
-        View artwork = wordVisual(w, 250);
-        LinearLayout.LayoutParams artworkLp = new LinearLayout.LayoutParams(-1, dp(250));
-        artworkLp.setMargins(0, 0, 0, dp(12));
+        content.addView(space(6));
+
+        int[] cardColors = {
+                LIGHT_BLUE,
+                LIGHT_PINK,
+                LIGHT_GREEN,
+                LIGHT_YELLOW,
+                LIGHT_PURPLE
+        };
+
+        LinearLayout c = new LinearLayout(this);
+        c.setOrientation(LinearLayout.VERTICAL);
+        c.setGravity(Gravity.CENTER_HORIZONTAL);
+        c.setPadding(dp(12), dp(10), dp(12), dp(10));
+        c.setBackground(shape(
+                cardColors[learnPosition % cardColors.length],
+                22
+        ));
+        c.setElevation(dp(3));
+
+        // Keep the verified V3 artwork large; only remove wasted vertical space.
+        View artwork = wordVisual(w, 190);
+        LinearLayout.LayoutParams artworkLp =
+                new LinearLayout.LayoutParams(-1, dp(190));
+        artworkLp.setMargins(0, 0, 0, dp(4));
         c.addView(artwork, artworkLp);
 
-        c.addView(centerText(w.en.toUpperCase(), 31, true));
-        c.addView(centerText(w.id, 19, false));
-        TextView category = centerText("● " + w.category, 13, false);
+        c.addView(centerText(w.en.toUpperCase(), 27, true));
+        c.addView(centerText(w.id, 17, false));
+
+        TextView category = centerText("● " + w.category, 12, false);
         category.setTextColor(MUTED);
         c.addView(category);
-        c.addView(space(10));
+
+        c.addView(space(4));
 
         Button sound = button("🔊  DENGARKAN", BLUE);
+        LinearLayout.LayoutParams soundLp =
+                new LinearLayout.LayoutParams(-1, dp(46));
+        soundLp.setMargins(0, dp(2), 0, dp(3));
+        sound.setLayoutParams(soundLp);
+        sound.setTextSize(15);
         sound.setOnClickListener(v -> speak(w.en));
         c.addView(sound);
 
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
+
         Button hard = button("🧠 Sulit", PINK);
         Button known = button("⭐ Hafal", GREEN);
-        row.addView(hard, new LinearLayout.LayoutParams(0, dp(54), 1));
+        hard.setTextSize(14);
+        known.setTextSize(14);
+
+        row.addView(
+                hard,
+                new LinearLayout.LayoutParams(0, dp(46), 1)
+        );
+
         Space gap = new Space(this);
-        row.addView(gap, new LinearLayout.LayoutParams(dp(8), 1));
-        row.addView(known, new LinearLayout.LayoutParams(0, dp(54), 1));
+        row.addView(
+                gap,
+                new LinearLayout.LayoutParams(dp(7), 1)
+        );
+
+        row.addView(
+                known,
+                new LinearLayout.LayoutParams(0, dp(46), 1)
+        );
 
         hard.setOnClickListener(v -> {
             markHard(idx, "memory");
@@ -949,26 +1029,51 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
                 prefs.edit()
                         .putBoolean("known_" + idx, true)
                         .putBoolean("hard_" + idx, false)
-                        .putInt("learned", prefs.getInt("learned", 0) + 1)
+                        .putInt(
+                                "learned",
+                                prefs.getInt("learned", 0) + 1
+                        )
                         .apply();
             } else {
-                prefs.edit().putBoolean("hard_" + idx, false).apply();
+                prefs.edit()
+                        .putBoolean("hard_" + idx, false)
+                        .apply();
             }
+
             sessionKnown++;
             toast("Hebat! ⭐");
             moveToNextLearnCard();
         });
+
         c.addView(row);
 
-        Button pronounce = button("🗣️ Sulit Mengucapkan", ORANGE);
+        Button pronounce = button(
+                "🗣️ Sulit Mengucapkan",
+                ORANGE
+        );
+        LinearLayout.LayoutParams pronounceLp =
+                new LinearLayout.LayoutParams(-1, dp(46));
+        pronounceLp.setMargins(0, dp(3), 0, 0);
+        pronounce.setLayoutParams(pronounceLp);
+        pronounce.setTextSize(14);
+
         pronounce.setOnClickListener(v -> {
             markHard(idx, "pronounce");
             sessionHard++;
             speak(w.en + ". " + w.en + ". " + w.en);
-            new Handler(Looper.getMainLooper()).postDelayed(this::moveToNextLearnCard, 900);
+
+            new Handler(Looper.getMainLooper()).postDelayed(
+                    this::moveToNextLearnCard,
+                    900
+            );
         });
+
         c.addView(pronounce);
-        content.addView(c);
+
+        LinearLayout.LayoutParams cardLp =
+                new LinearLayout.LayoutParams(-1, -2);
+        cardLp.setMargins(0, 0, 0, 0);
+        content.addView(c, cardLp);
     }
 
     private void moveToNextLearnCard() {
@@ -979,6 +1084,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     private void showLearnBatchResult() {
         clear();
+
+        content.setPadding(
+                dp(14),
+                dp(10),
+                dp(14),
+                dp(12)
+        );
         LinearLayout c = card(LIGHT_GREEN);
         c.addView(centerText("🎉", 72, false));
         c.addView(centerText("Target Hari Ini Selesai!", 27, true));
