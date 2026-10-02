@@ -27,6 +27,13 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
 
     private final ArrayList<TextView> navItems = new ArrayList<>();
 
+    // Learning session: one card at a time
+    private List<Integer> learnSession = new ArrayList<>();
+    private int learnPosition = 0;
+    private int sessionKnown = 0;
+    private int sessionHard = 0;
+    private int learnBatchOffset = 0;
+
     // =====================================================
     // LITTLE LINGO COLORS
     // =====================================================
@@ -818,255 +825,177 @@ public class MainActivity extends Activity implements TextToSpeech.OnInitListene
     }
 
     // =====================================================
-    // LEARN
+    // LEARN — ONE CARD AT A TIME
     // =====================================================
 
     private void showLearn() {
-
         setActiveNav(1);
-        clear();
-
-        content.addView(
-                text(
-                        "📚 Belajar Kata",
-                        28,
-                        true
-                )
-        );
-
-        TextView subtitle =
-                text(
-                        "Dengar • Ucapkan • Ingat",
-                        16,
-                        false
-                );
-
-        subtitle.setTextColor(MUTED);
-
-        content.addView(subtitle);
-        content.addView(space(14));
-
-        LinearLayout stats =
-                card(LIGHT_YELLOW);
-
-        stats.addView(
-                centerText(
-                        "⭐ " +
-                                prefs.getInt(
-                                        "learned",
-                                        0
-                                ) +
-                                " dikuasai    🔥 Hari " +
-                                (dayNumber() + 1),
-                        18,
-                        true
-                )
-        );
-
-        content.addView(stats);
-
-        Button review =
-                button(
-                        "🔁 Uji Kata Kemarin",
-                        PURPLE
-                );
-
-        review.setOnClickListener(
-                v -> showReview()
-        );
-
-        content.addView(review);
-        content.addView(space(14));
-
-        content.addView(
-                text(
-                        "🌟 5 Kata Hari Ini",
-                        23,
-                        true
-                )
-        );
-
-        content.addView(space(9));
-
-        for (int idx : todayWords()) {
-            addWordCard(idx);
-        }
+        startLearnBatch(0);
     }
 
-    private void addWordCard(int idx) {
+    private void startLearnBatch(int batchOffset) {
+        learnBatchOffset = Math.max(0, batchOffset);
+        learnPosition = 0;
+        sessionKnown = 0;
+        sessionHard = 0;
+        learnSession = buildLearnBatch(learnBatchOffset);
 
-        Word w = words[idx];
+        if (learnSession.isEmpty()) {
+            clear();
+            LinearLayout c = card(LIGHT_GREEN);
+            c.addView(centerText("🏆", 72, false));
+            c.addView(centerText("Hebat!", 28, true));
+            c.addView(centerText("Semua kata yang tersedia sudah dipelajari.", 17, false));
+            content.addView(c);
+            Button home = button("🏠 Kembali ke Home", BLUE);
+            home.setOnClickListener(v -> showDashboard());
+            content.addView(home);
+            return;
+        }
+        showLearnCard();
+    }
 
-        int[] cardColors = {
-                LIGHT_BLUE,
-                LIGHT_PINK,
-                LIGHT_GREEN,
-                LIGHT_YELLOW,
-                LIGHT_PURPLE
-        };
+    private List<Integer> buildLearnBatch(int batchOffset) {
+        List<Integer> result = new ArrayList<>();
+        if (words.length == 0) return result;
 
-        LinearLayout c =
-                card(
-                        cardColors[
-                                idx %
-                                        cardColors.length
-                                ]
-                );
+        int start = ((dayNumber() * 5) + batchOffset) % words.length;
 
-        View artwork = wordVisual(w, 190);
-        LinearLayout.LayoutParams artworkLp = new LinearLayout.LayoutParams(-1, dp(190));
+        // Prioritaskan kata yang belum pernah ditandai Hafal.
+        for (int step = 0; step < words.length && result.size() < 5; step++) {
+            int idx = (start + step) % words.length;
+            if (!prefs.getBoolean("known_" + idx, false)) result.add(idx);
+        }
+
+        // Jika hampir semua sudah hafal, isi sisa batch sebagai review.
+        if (result.size() < 5) {
+            for (int step = 0; step < words.length && result.size() < 5; step++) {
+                int idx = (start + step) % words.length;
+                if (!result.contains(idx)) result.add(idx);
+            }
+        }
+        return result;
+    }
+
+    private void showLearnCard() {
+        clear();
+        if (learnPosition >= learnSession.size()) {
+            showLearnBatchResult();
+            return;
+        }
+
+        final int idx = learnSession.get(learnPosition);
+        final Word w = words[idx];
+
+        content.addView(text("📚 Belajar Kata", 28, true));
+        TextView subtitle = text("Dengar • Lihat • Ingat", 16, false);
+        subtitle.setTextColor(MUTED);
+        content.addView(subtitle);
+        content.addView(space(12));
+
+        LinearLayout progress = card(LIGHT_YELLOW);
+        progress.addView(centerText("Kata " + (learnPosition + 1) + " / " + learnSession.size(), 18, true));
+
+        StringBuilder dots = new StringBuilder();
+        for (int i = 0; i < learnSession.size(); i++) {
+            dots.append(i < learnPosition ? "●" : (i == learnPosition ? "◉" : "○"));
+            if (i + 1 < learnSession.size()) dots.append("   ");
+        }
+        TextView dotView = centerText(dots.toString(), 22, true);
+        dotView.setTextColor(PURPLE);
+        progress.addView(dotView);
+        TextView target = centerText("🌟 Target 5 kata • boleh lanjut lagi", 13, false);
+        target.setTextColor(MUTED);
+        progress.addView(target);
+        content.addView(progress);
+
+        int[] cardColors = {LIGHT_BLUE, LIGHT_PINK, LIGHT_GREEN, LIGHT_YELLOW, LIGHT_PURPLE};
+        LinearLayout c = card(cardColors[learnPosition % cardColors.length]);
+
+        View artwork = wordVisual(w, 250);
+        LinearLayout.LayoutParams artworkLp = new LinearLayout.LayoutParams(-1, dp(250));
         artworkLp.setMargins(0, 0, 0, dp(12));
         c.addView(artwork, artworkLp);
 
-        c.addView(
-                centerText(
-                        w.en.toUpperCase(),
-                        27,
-                        true
-                )
-        );
-
-        c.addView(
-                centerText(
-                        w.id,
-                        18,
-                        false
-                )
-        );
-
-        TextView category =
-                centerText(
-                        "● " + w.category,
-                        13,
-                        false
-                );
-
+        c.addView(centerText(w.en.toUpperCase(), 31, true));
+        c.addView(centerText(w.id, 19, false));
+        TextView category = centerText("● " + w.category, 13, false);
         category.setTextColor(MUTED);
-
         c.addView(category);
         c.addView(space(10));
 
-        Button speak =
-                button(
-                        "🔊  DENGARKAN",
-                        BLUE
-                );
+        Button sound = button("🔊  DENGARKAN", BLUE);
+        sound.setOnClickListener(v -> speak(w.en));
+        c.addView(sound);
 
-        speak.setOnClickListener(
-                v -> speak(w.en)
-        );
-
-        c.addView(speak);
-
-        LinearLayout row =
-                new LinearLayout(this);
-
-        row.setOrientation(
-                LinearLayout.HORIZONTAL
-        );
-
-        Button hard =
-                button(
-                        "🧠 Sulit",
-                        PINK
-                );
-
-        Button known =
-                button(
-                        "⭐ Hafal",
-                        GREEN
-                );
-
-        row.addView(
-                hard,
-                new LinearLayout.LayoutParams(
-                        0,
-                        dp(54),
-                        1
-                )
-        );
-
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        Button hard = button("🧠 Sulit", PINK);
+        Button known = button("⭐ Hafal", GREEN);
+        row.addView(hard, new LinearLayout.LayoutParams(0, dp(54), 1));
         Space gap = new Space(this);
-
-        row.addView(
-                gap,
-                new LinearLayout.LayoutParams(
-                        dp(8),
-                        1
-                )
-        );
-
-        row.addView(
-                known,
-                new LinearLayout.LayoutParams(
-                        0,
-                        dp(54),
-                        1
-                )
-        );
+        row.addView(gap, new LinearLayout.LayoutParams(dp(8), 1));
+        row.addView(known, new LinearLayout.LayoutParams(0, dp(54), 1));
 
         hard.setOnClickListener(v -> {
-
-            markHard(
-                    idx,
-                    "memory"
-            );
-
-            toast(
-                    "Kita latihan lagi ❤️"
-            );
+            markHard(idx, "memory");
+            sessionHard++;
+            toast("Masuk latihan khusus ❤️");
+            moveToNextLearnCard();
         });
 
         known.setOnClickListener(v -> {
-
-            if (!prefs.getBoolean(
-                    "known_" + idx,
-                    false
-            )) {
-
+            if (!prefs.getBoolean("known_" + idx, false)) {
                 prefs.edit()
-                        .putBoolean(
-                                "known_" + idx,
-                                true
-                        )
-                        .putInt(
-                                "learned",
-                                prefs.getInt(
-                                        "learned",
-                                        0
-                                ) + 1
-                        )
+                        .putBoolean("known_" + idx, true)
+                        .putBoolean("hard_" + idx, false)
+                        .putInt("learned", prefs.getInt("learned", 0) + 1)
                         .apply();
+            } else {
+                prefs.edit().putBoolean("hard_" + idx, false).apply();
             }
-
+            sessionKnown++;
             toast("Hebat! ⭐");
+            moveToNextLearnCard();
         });
-
         c.addView(row);
 
-        Button pronounce =
-                button(
-                        "🗣️ Sulit Mengucapkan",
-                        ORANGE
-                );
-
+        Button pronounce = button("🗣️ Sulit Mengucapkan", ORANGE);
         pronounce.setOnClickListener(v -> {
-
-            markHard(
-                    idx,
-                    "pronounce"
-            );
-
-            speak(
-                    w.en + ". " +
-                            w.en + ". " +
-                            w.en
-            );
+            markHard(idx, "pronounce");
+            sessionHard++;
+            speak(w.en + ". " + w.en + ". " + w.en);
+            new Handler(Looper.getMainLooper()).postDelayed(this::moveToNextLearnCard, 900);
         });
-
         c.addView(pronounce);
-
         content.addView(c);
+    }
+
+    private void moveToNextLearnCard() {
+        learnPosition++;
+        if (learnPosition < learnSession.size()) showLearnCard();
+        else showLearnBatchResult();
+    }
+
+    private void showLearnBatchResult() {
+        clear();
+        LinearLayout c = card(LIGHT_GREEN);
+        c.addView(centerText("🎉", 72, false));
+        c.addView(centerText("Target Hari Ini Selesai!", 27, true));
+        c.addView(space(8));
+        c.addView(centerText("⭐ " + sessionKnown + " Hafal   ❤️ " + sessionHard + " Perlu Latihan", 18, true));
+        TextView note = centerText("Kalau masih semangat, boleh belajar 5 kata lagi.", 15, false);
+        note.setTextColor(MUTED);
+        c.addView(note);
+        content.addView(c);
+
+        Button more = button("🌟 Belajar 5 Kata Lagi", PURPLE);
+        more.setOnClickListener(v -> startLearnBatch(learnBatchOffset + 5));
+        content.addView(more);
+
+        Button finish = button("🏠 Selesai Hari Ini", BLUE);
+        finish.setOnClickListener(v -> showDashboard());
+        content.addView(finish);
     }
 
     private void markHard(
